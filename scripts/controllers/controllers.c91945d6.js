@@ -21165,7 +21165,7 @@
           if (value == true) {
             scope.batchRequests.push({
               requestId: reqId++,
-              relativeUrl: "loans/" + key + "?command=disburseToSavings",
+              relativeUrl: "loans/" + key + "?command=disburse",
               method: "POST",
               body: JSON.stringify(scope.formData),
             });
