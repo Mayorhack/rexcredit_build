@@ -1,0 +1,150 @@
+<div id="viewlptop"></div>
+<div class="content-container" ng-controller="TellerPostingController">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/accounting">{{'label.anchor.accounting' | translate}}</a>
+    </li>
+    <li class="active">{{'label.anchor.tellerPosting' | translate}}</li>
+  </ul>
+  <script type="text/ng-template" id="otp.html">
+    <div class="modal-header silver">
+        <h3 class="bolder">{{'label.heading.otp' | translate}}</h3>
+    </div>
+
+    <div class="modal-body form-horizontal">
+        <api-validate></api-validate>
+        <br>
+        <div class="form-group">
+            <label class="control-label col-sm-4" for="otp">{{ 'label.input.otp' | translate }}</label>
+
+            <div class="col-sm-5">
+                <input type="text" id="otp" name="otp" ng-model="formData.otp" class="form-control"/>
+            </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label col-sm-4" for="comment">{{ 'label.input.comment' | translate }}</label>
+
+          <div class="col-sm-5">
+              <textarea row="3" id="comment" name="comment" ng-model="formData.comment" class="form-control"></textarea>
+          </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer silver">
+        <button class="btn btn-default" ng-click="cancel()">{{'label.button.cancel' | translate}}</button>
+        <button class="btn btn-primary" ng-click="save()">{{'label.button.save' | translate}}</button>
+    </div>
+  </script>
+  <script type="text/ng-template" id="success.html">
+    <div class="modal-header silver" style="text-align:center; border:none" >
+        <h3 class="bolder">Operation Successful</h3>
+    </div>
+    <div class="modal-footer silver" style="text-align:center; border:none">
+        <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+    </div>
+  </script>
+  <div class="card">
+    <div class="content">
+      <api-validate></api-validate>
+      <div class="toolbar">
+        <h4>{{'label.heading.tellerPosting' | translate}}</h4>
+        <div class="pull-right">
+          <a
+            href="#/create_teller"
+            class="btn btn-primary"
+            has-permission="CREATE_GLACCOUNT"
+            ><i class="fa fa-plus"></i>&nbsp;&nbsp;{{'label.button.addTeller' |
+            translate}}</a
+          >
+        </div>
+      </div>
+      <div ng-hide="isTreeView">
+        <div class="">
+          <input
+            ng-model="filterText"
+            type="text"
+            ng-keyup="onFilter()"
+            class="form-control"
+            placeholder="{{'label.input.filterbyAccountGlcodeAccounttype' | translate}}"
+          />
+        </div>
+        <!-- <div class="col-sm-3 paddedbottom10">
+          <label for="startDate">Start Date</label>
+          <input
+            id="startDate"
+            type="text"
+            name="startDate"
+            datepicker-pop="dd MMMM yyyy"
+            class="form-control"
+            ng-model="formData.startDate"
+            is-open="opened"
+            min="'2000-01-01'"
+            max="restrictDate"
+            pl
+          />
+        </div> -->
+        <br />
+        <table class="table">
+          <thead>
+            <tr class="graybg">
+              <th>{{'label.input.tellerId' | translate}}</th>
+              <th>{{'label.input.beneficiaryAccount' | translate}}</th>
+              <th>{{'label.input.beneficiaryName' | translate}}</th>
+              <th>{{'label.input.sourceAccount' | translate}}</th>
+              <th>{{'label.input.amount' | translate}}</th>
+              <th>{{'label.input.status' | translate}}</th>
+              <th>{{'label.heading.actions' | translate}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="pointer-main"
+              dir-paginate="coadata in coadatas | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
+            >
+              <td class="pointer">{{coadata.tellerId}}</td>
+              <td class="pointer">{{coadata.beneficiaryAccount}}</td>
+              <td class="pointer">{{coadata.beneficiaryAccountName}}</td>
+              <td class="pointer">{{coadata.sourceAccount}}</td>
+              <td class="pointer">{{coadata.amount}}</td>
+              <td class="pointer">{{coadata.status}}</td>
+              <td class="pointer" has-permission="UPDATE_TELLER">
+                <span
+                  ><a
+                    uib-tooltip="Approve"
+                    ng-click="open(coadata.tranRefNo, 'Approved')"
+                    class="btn btn-xs btn-primary ng-binding ng-scope"
+                    ><i class="fa fa-check"></i> </a
+                ></span>
+                <span
+                  ><a
+                    uib-tooltip="Reject"
+                    ng-click="open(coadata.tranRefNo, 'Rejected')"
+                    class="btn btn-xs btn-danger ng-binding ng-scope"
+                    ><i class="fa fa-times"></i> </a
+                ></span>
+              </td>
+            </tr>
+          </tbody>
+          <tr>
+            <td colspan="5"></td>
+            <td class="pull-right">
+              <a ng-click="scrollto('viewlptop')"
+                ><i class="fa fa-upload"></i>{{'label.button.top' |
+                translate}}</a
+              >
+            </td>
+          </tr>
+        </table>
+        <dir-pagination-controls
+          boundary-links="true"
+          template-url="bower_components/angular-utils-pagination/dirPagination.tpl.html"
+        ></dir-pagination-controls>
+      </div>
+
+      <br />
+      <br />
+      <br /><br /><br /><br /><br /><br />
+    </div>
+  </div>
+</div>
