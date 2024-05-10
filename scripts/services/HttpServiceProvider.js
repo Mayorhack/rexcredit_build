@@ -51,6 +51,11 @@
                 http.defaults.headers.common.Authorization = "bearer " + key;
               } else {
                 http.defaults.headers.common.Authorization = "Basic " + key;
+                http.defaults.headers.common["x-source-code"] = "BAASCORE";
+                http.defaults.headers.common["x-client-id"] =
+                  "TSTBAASCORE_827284704106634167780257123372";
+                http.defaults.headers.common["x-client-secret"] =
+                  "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJCQUFTQ09SRSIsImlhdCI6MTcxNDQ4MTYxNywic3ViIjoiQkFBU0NPUkUiLCJpc3MiOiJCQUFTQ09SRSIsImV4cCI6MTcxMjY4OTkyMH0.ZFGzRPRlbsIfcMWpjpoy3ADfZ_TCahucoahqdg1pK_w";
               }
             };
 

@@ -801,6 +801,15 @@
                 get: { method: "POST" },
               }
             ),
+            contractMasterResource: defineResource(
+              apiVer + "/thirdparty/contract-master",
+              {},
+              {
+                getAllContracts: {
+                  method: "POST",
+                },
+              }
+            ),
             journalEntriesResource: defineResource(
               apiVer + "/journalentries/:trxid",
               { trxid: "@transactionId" },
