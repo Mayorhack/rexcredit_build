@@ -1,0 +1,160 @@
+<div id="viewlptop"></div>
+<div class="content-container" ng-controller="LoansController">
+  <ul class="breadcrumb">
+    <li class="active">{{'label.anchor.loans' | translate}}</li>
+  </ul>
+
+  <div class="card">
+    <div class="content">
+      <api-validate></api-validate>
+      <div class="toolbar">
+        <h4>{{'Loans' | translate}}</h4>
+        <div class="pull-right">
+          <!-- <a
+            href="#/create_teller"
+            class="btn btn-primary"
+            has-permission="CREATE_GLACCOUNT"
+            ><i class="fa fa-plus"></i>&nbsp;&nbsp;{{'label.button.addTeller' |
+            translate}}</a
+          > -->
+        </div>
+      </div>
+      <div ng-hide="isTreeView">
+        <h4>Filter Loans</h4>
+        <div
+          class=""
+          style="
+            display: grid;
+            grid-template-columns: repeat(5, minmax(180px, 1fr));
+            gap: 20px;
+          "
+        >
+          <div class="">
+            <input
+              class="date-disable form-control"
+              id="startDate"
+              type="text"
+              datepicker-pop="dd MMMM yyyy"
+              ng-model="formData.startDate"
+              is-open="opened"
+              min="'2000-01-01'"
+              max="restrictDate"
+              placeholder="{{'Start Date' | translate}}"
+            />
+          </div>
+          <div class="">
+            <input
+              class="date-disable form-control"
+              id="endDate"
+              type="text"
+              datepicker-pop="dd MMMM yyyy"
+              ng-model="formData.endDate"
+              is-open="opened"
+              min="'2000-01-01'"
+              max="restrictDate"
+              placeholder="{{'End Date' | translate}}"
+            />
+          </div>
+
+          <button
+            class="btn btn-block btn-primary"
+            type="submit"
+            data-ng-click="onFilter()"
+            id="contract-filter-button"
+            style="margin-left: 20px"
+          >
+            Filter
+          </button>
+        </div>
+
+        <!-- <div class="col-sm-3 paddedbottom10">
+          <label for="startDate">Start Date</label>
+          <input
+            id="startDate"
+            type="text"
+            name="startDate"
+            datepicker-pop="dd MMMM yyyy"
+            class="form-control"
+            ng-model="formData.startDate"
+            is-open="opened"
+            min="'2000-01-01'"
+            max="restrictDate"
+            pl
+          />
+        </div> -->
+        <br />
+        <table class="table">
+          <thead>
+            <tr class="graybg">
+              <th>{{'Ref No' | translate}}</th>
+              <th>{{'Contract Type' | translate}}</th>
+              <th>{{'Start Date' | translate}}</th>
+              <th>{{'Maturity Date' | translate}}</th>
+
+              <th>{{'label.input.amount' | translate}}</th>
+              <th>{{'Rate' | translate}}</th>
+              <th>{{'Tenor' | translate}}</th>
+              <th>{{'Total Interest' | translate}}</th>
+              <th>{{'Total Accrued' | translate}}</th>
+              <th>{{'label.input.status' | translate}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="pointer-main"
+              dir-paginate="coadata in coadatas | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
+            >
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.referenceNo}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.contractType}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.startDate}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.maturityDate}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.amount.toLocaleString()}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.rate}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.tenor}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.totalInterest.toLocaleString()}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.totalAccrued.toLocaleString()}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(coadata.id)">
+                {{coadata.status}}
+              </td>
+            </tr>
+          </tbody>
+          <tr>
+            <td colspan="5"></td>
+            <td class="pull-right">
+              <a ng-click="scrollto('viewlptop')"
+                ><i class="fa fa-upload"></i>{{'label.button.top' |
+                translate}}</a
+              >
+            </td>
+          </tr>
+        </table>
+        <dir-pagination-controls
+          boundary-links="true"
+          template-url="bower_components/angular-utils-pagination/dirPagination.tpl.html"
+        ></dir-pagination-controls>
+      </div>
+
+      <br />
+      <br />
+      <br /><br /><br /><br /><br /><br />
+    </div>
+  </div>
+</div>
