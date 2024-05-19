@@ -32,27 +32,10 @@
           <div class="">
             <input
               class="date-disable form-control"
-              id="startDate"
+              id="accountNo"
               type="text"
-              datepicker-pop="dd MMMM yyyy"
-              ng-model="formData.startDate"
-              is-open="opened"
-              min="'2000-01-01'"
-              max="restrictDate"
-              placeholder="{{'Start Date' | translate}}"
-            />
-          </div>
-          <div class="">
-            <input
-              class="date-disable form-control"
-              id="endDate"
-              type="text"
-              datepicker-pop="dd MMMM yyyy"
-              ng-model="formData.endDate"
-              is-open="opened"
-              min="'2000-01-01'"
-              max="restrictDate"
-              placeholder="{{'End Date' | translate}}"
+              ng-model="formData.accountNo"
+              placeholder="{{'Account Number' | translate}}"
             />
           </div>
 
@@ -86,9 +69,11 @@
         <table class="table">
           <thead>
             <tr class="graybg">
-              <th>{{'Ref No' | translate}}</th>
-              <th>{{'Contract Type' | translate}}</th>
-              <th>{{'Start Date' | translate}}</th>
+              <th>{{'Id' | translate}}</th>
+
+              <th>{{'Account No' | translate}}</th>
+              <th>{{'Client Name' | translate}}</th>
+              <th>{{'Submitted Date' | translate}}</th>
               <th>{{'Maturity Date' | translate}}</th>
 
               <th>{{'label.input.amount' | translate}}</th>
@@ -102,37 +87,41 @@
           <tbody>
             <tr
               class="pointer-main"
-              dir-paginate="coadata in coadatas | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
+              dir-paginate="loan in loans | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
             >
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.referenceNo}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.id}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.contractType}}
+
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.accountNo}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.startDate}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.clientName}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.maturityDate}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.timeline.submittedOnDate[2]+"-"+loan.timeline.submittedOnDate[1]+"-"+loan.timeline.submittedOnDate[0]}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.amount.toLocaleString()}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.timeline.actualMaturityDate[2]+"-"+loan.timeline.actualMaturityDate[1]+"-"+loan.timeline.actualMaturityDate[0]}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.rate}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.principal.toLocaleString()}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.tenor}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.interestRatePerPeriod }}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.totalInterest.toLocaleString()}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.numberOfRepayments}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.totalAccrued.toLocaleString()}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.summary.interestCharged.toLocaleString()}}
               </td>
-              <td class="pointer" data-ng-click="routeTo(coadata.id)">
-                {{coadata.status}}
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.summary.totalExpectedRepayment.toLocaleString()}}
+              </td>
+              <td class="pointer" data-ng-click="routeTo(loan.id)">
+                {{loan.status.value}}
               </td>
             </tr>
           </tbody>
@@ -146,9 +135,11 @@
             </td>
           </tr>
         </table>
+
         <dir-pagination-controls
           boundary-links="true"
           template-url="bower_components/angular-utils-pagination/dirPagination.tpl.html"
+          on-page-change="getAll(newPageNumber)"
         ></dir-pagination-controls>
       </div>
 

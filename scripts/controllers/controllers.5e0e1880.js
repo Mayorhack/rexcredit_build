@@ -2429,43 +2429,57 @@
     });
 }(mifosX.controllers || {}));
 ;(function (module) {
-    mifosX.controllers = _.extend(module, {
-        ListTransactionsController: function (scope, resourceFactory, paginatorService,routeParams, dateFilter, location) {
+  mifosX.controllers = _.extend(module, {
+    ListTransactionsController: function (
+      scope,
+      resourceFactory,
+      paginatorService,
+      routeParams,
+      dateFilter,
+      location
+    ) {
+      scope.standingInstructionId = routeParams.instructionId;
+      scope.details = {};
+      scope.transactions = {};
+      var fetchFunction = function (offset, limit, callback) {
+        var params = {};
+        params.offset = offset;
+        params.limit = limit;
+        params.locale = scope.optlang.code;
+        params.dateFormat = scope.df;
+        params.standingInstructionId = scope.standingInstructionId;
 
-            scope.standingInstructionId = routeParams.instructionId;
-            scope.details ={};
-            scope.transactions={};
-            var fetchFunction = function (offset, limit, callback) {
-                var params = {};
-                params.offset = offset;
-                params.limit = limit;
-                params.locale = scope.optlang.code;
-                params.dateFormat = scope.df;
-                 params.standingInstructionId = scope.standingInstructionId;
-               
-                 resourceFactory.standingInstructionResource.getTransactions(params, function (data) {
-                scope.details.fromAccount = data.fromAccount;
-                scope.details.toAccount = data.toAccount;
-                scope.details.fromAccountType = data.fromAccountType;
-                scope.details.toAccountType = data.toAccountType;
-                scope.details.toClient = data.toClient;
-                scope.details.name = data.name;
-                scope.details.id = data.id;
-                callback(data.transactions);
-            });
-
-            
-            
-
-            };
-        scope.transactions = paginatorService.paginate(fetchFunction, 14);
-
-        }
+        resourceFactory.standingInstructionResource.getTransactions(
+          params,
+          function (data) {
+            scope.details.fromAccount = data.fromAccount;
+            scope.details.toAccount = data.toAccount;
+            scope.details.fromAccountType = data.fromAccountType;
+            scope.details.toAccountType = data.toAccountType;
+            scope.details.toClient = data.toClient;
+            scope.details.name = data.name;
+            scope.details.id = data.id;
+            callback(data.transactions);
+          }
+        );
+      };
+      scope.transactions = paginatorService.paginate(fetchFunction, 14);
+    },
+  });
+  mifosX.ng.application
+    .controller("ListTransactionsController", [
+      "$scope",
+      "ResourceFactory",
+      "PaginatorService",
+      "$routeParams",
+      "dateFilter",
+      "$location",
+      mifosX.controllers.ListTransactionsController,
+    ])
+    .run(function ($log) {
+      $log.info("ListTransactionsController initialized");
     });
-    mifosX.ng.application.controller('ListTransactionsController', ['$scope', 'ResourceFactory', 'PaginatorService', '$routeParams','dateFilter', '$location', mifosX.controllers.ListTransactionsController]).run(function ($log) {
-        $log.info("ListTransactionsController initialized");
-    });
-}(mifosX.controllers || {}));
+})(mifosX.controllers || {});
 ;(function (module) {
     mifosX.controllers = _.extend(module, {
         MakeAccountTransferController: function (scope, resourceFactory, location, routeParams, dateFilter) {
@@ -16639,71 +16653,43 @@
       translate,
       resourceFactory,
       location,
-      anchorScroll,
-      $uibModal
+      anchorScroll
     ) {
+      scope.loans = [];
       $rootScope.tempNodeID = -100; // variable used to store nodeID (from directive), so it(nodeID) is available for detail-table
 
       scope.coadata = [];
-      scope.isTreeView = false;
-      today = `${new Date().getFullYear()}-${
-        new Date().getMonth() + 1
-      }-${new Date().getDate()}`;
+
       scope.formData = {};
-      scope.contractTypes = [
-        { name: "Takings", code: "TAKINGS" },
-        { name: "Investment", code: "INVESTMENT" },
-        { name: "Loan", code: "LOAN" },
-        { name: "Fixed Deposit", code: "FIXED DEPOSIT" },
-      ];
 
       scope.routeTo = function (id) {
         location.path("/viewloanaccount/" + id);
       };
-      formatDate = function (date) {
-        if (!date) return "";
-        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-      };
+
       scope.scrollto = function (link) {
         location.hash(link);
         anchorScroll();
       };
 
-      if (!scope.searchCriteria.acoa) {
-        scope.searchCriteria.acoa = null;
-        scope.saveSC();
-      }
-
       scope.onFilter = function () {
-        scope.searchCriteria.acoa = scope.filterText || "";
-        scope.saveSC();
         getAll();
-      };
-      scope.open = function (refNo, status) {
-        scope.formData.refNo = refNo;
-        scope.formData.status = status;
-        $uibModal.open({
-          templateUrl: "otp.html",
-          controller: ModalInstanceCtrl,
-        });
-      };
-
-      scope.approve = function (refNo) {
-        resourceFactory.approveTellerPosting.approve({ refNo });
       };
 
       scope.ChartsPerPage = 15;
-      getAll = function () {
-        resourceFactory.contractMasterResource.getAllContracts(
+      getAll = function (offset) {
+        var params = {};
+        params.offset = offset || 0;
+        params.limit = scope.ChartsPerPage;
+        if (scope.formData.accountNo) {
+          params.accountNo = scope.formData.accountNo;
+        }
+        resourceFactory.loanMasterResource.getAllLoans(
           {
-            contractType: "LOAN",
-            endDate: this.formatDate(scope.formData.endDate) || today,
-            startDate: scope.formData?.startDate
-              ? this.formatDate(scope.formData.startDate)
-              : "2024-01-01",
+            ...params,
           },
           function (data) {
-            scope.coadatas = data.body.datas;
+            scope.totalGroups = data.totalFilteredRecords;
+            scope.loans = data.pageItems;
           }
         );
       };
@@ -16719,6 +16705,7 @@
       "$location",
       "$anchorScroll",
       "$uibModal",
+
       mifosX.controllers.LoansController,
     ])
     .run(function ($log) {

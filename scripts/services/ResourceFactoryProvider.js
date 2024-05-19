@@ -810,6 +810,15 @@
                 },
               }
             ),
+            loanMasterResource: defineResource(
+              apiVer + "/loans/",
+              {},
+              {
+                getAllLoans: {
+                  method: "GET",
+                },
+              }
+            ),
             journalEntriesResource: defineResource(
               apiVer + "/journalentries/:trxid",
               { trxid: "@transactionId" },
