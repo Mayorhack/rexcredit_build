@@ -978,6 +978,29 @@
                 update: { method: "PUT" },
               }
             ),
+            acctMaintenanceHold: defineResource(
+              apiVer + "/acctmaintenance/hold",
+              {},
+              {
+                hold: { method: "POST", params: {} },
+
+                update: { method: "PUT" },
+              }
+            ),
+            acctMaintenanceUnhold: defineResource(
+              apiVer + "/acctmaintenance/unhold",
+              {},
+              {
+                unhold: { method: "POST", params: {} },
+              }
+            ),
+            acctMaintenanceOverDraft: defineResource(
+              apiVer + "/acctmaintenance/overdraft",
+              {},
+              {
+                overdraft: { method: "POST", params: {} },
+              }
+            ),
             gsimResource: defineResource(
               apiVer + "/savingsaccounts/gsim/:parentAccountId",
               { parentAccountId: "@parentAccountId" },

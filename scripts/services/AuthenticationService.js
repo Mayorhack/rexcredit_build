@@ -95,7 +95,7 @@
           httpService.setOTPToken(credentials.otp);
           httpService
             .post(
-              apiVer + "/authentication?otp=" + credentials.otp,
+              apiVer + "/authentication",
               {
                 username: credentials.username,
                 password: credentials.password,

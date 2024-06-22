@@ -625,6 +625,7 @@
       .when("/savingaccount/:id/:action", {
         templateUrl: "views/savings/saving_account_actions.html",
       })
+
       .when(
         "/gsimaccount/:parentId/:childId/:action/:groupId/:gsimAccountNumber",
         {
