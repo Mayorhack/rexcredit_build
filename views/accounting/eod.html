@@ -1,29 +1,104 @@
 <div id="viewlptop"></div>
-<div class="content-container" ng-controller="ContractMasterController">
+<div class="content-container" ng-controller="EODController">
+  <script type="text/ng-template" id="success.html">
+    <div class="modal-header silver" style="text-align:center; border:none" >
+        <h3 class="bolder">Operation Successful</h3>
+    </div>
+    <div class="modal-footer silver" style="text-align:center; border:none">
+        <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+    </div>
+  </script>
   <ul class="breadcrumb">
     <li>
       <a href="#/accounting">{{'label.anchor.accounting' | translate}}</a>
     </li>
-    <li class="active">{{'label.anchor.contractMaster' | translate}}</li>
+    <li class="active">{{'EOD' | translate}}</li>
   </ul>
-
   <div class="card">
     <div class="content">
       <api-validate></api-validate>
       <div class="toolbar">
-        <h4>{{'label.heading.contractMaster' | translate}}</h4>
+        <h4>{{'Run EOD' | translate}}</h4>
         <div class="pull-right">
-          <a
+          <!-- <a
             href="#/book-contract"
             class="btn btn-primary"
             has-permission="CREATE_GLACCOUNT"
             ><i class="fa fa-plus"></i>&nbsp;&nbsp;{{'Book Contract' |
             translate}}</a
-          >
+          > -->
         </div>
       </div>
       <div ng-hide="isTreeView">
-        <h4>Filter Contracts</h4>
+        <br />
+        <div
+          class=""
+          style="
+            display: grid;
+            grid-template-columns: repeat(5, minmax(180px, 1fr));
+            gap: 20px;
+          "
+        >
+          <div class="">
+            <input
+              class="date-disable form-control"
+              id="eODDate"
+              type="text"
+              datepicker-pop="dd MMMM yyyy"
+              ng-model="formData.eODDate"
+              is-open="opened"
+              min="'2000-01-01'"
+              max="restrictDate"
+              placeholder="{{'EOD Date' | translate}}"
+            />
+          </div>
+
+          <div class="">
+            <select
+              chosen="activityCodes"
+              id="tranType"
+              ng-model="formData.activityCode"
+              class="form-control"
+              ng-options="activityCode.code as activityCode.name for activityCode in activityCodes"
+              value="{{activityCode.code}}"
+            >
+              <option class="displaynone" value="">
+                {{'Activity Code' | translate}}
+              </option>
+            </select>
+          </div>
+          <div class="" style="margin-left: 16px">
+            <input
+              class="date-disable form-control"
+              id="remarks"
+              type="text"
+              ng-model="formData.remarks"
+              placeholder="{{'Remarks' | translate}}"
+            />
+          </div>
+          <button
+            class="btn btn-block btn-primary"
+            type="submit"
+            data-ng-click="onRun()"
+            id="contract-filter-button"
+            style="margin-left: 20px"
+            data-ng-disabled="!formData.activityCode || !formData.eODDate"
+          >
+            Run
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br /><br />
+  <div class="card">
+    <div class="content">
+      <api-validate></api-validate>
+      <div class="toolbar">
+        <h4>{{'Fetch EOD' | translate}}</h4>
+      </div>
+      <div ng-hide="isTreeView">
+        <br />
         <div
           class=""
           style="
@@ -38,7 +113,7 @@
               id="startDate"
               type="text"
               datepicker-pop="dd MMMM yyyy"
-              ng-model="formData.startDate"
+              ng-model="formData.startTime"
               is-open="opened"
               min="'2000-01-01'"
               max="restrictDate"
@@ -51,36 +126,37 @@
               id="endDate"
               type="text"
               datepicker-pop="dd MMMM yyyy"
-              ng-model="formData.endDate"
+              ng-model="formData.endTime"
               is-open="opened"
               min="'2000-01-01'"
               max="restrictDate"
               placeholder="{{'End Date' | translate}}"
             />
           </div>
-
           <div class="">
             <select
-              chosen="contractTypes"
+              chosen="activityCodes"
               id="tranType"
-              ng-model="formData.contractType"
+              ng-model="formData.activityCode"
               class="form-control"
-              ng-options="contractType.code as contractType.name for contractType in contractTypes"
-              value="{{contractType.code}}"
+              ng-options="activityCode.code as activityCode.name for activityCode in activityCodes"
+              value="{{activityCode.code}}"
             >
               <option class="displaynone" value="">
-                {{'Contract Type' | translate}}
+                {{'Activity Code' | translate}}
               </option>
             </select>
           </div>
+
           <button
             class="btn btn-block btn-primary"
             type="submit"
             data-ng-click="onFilter()"
             id="contract-filter-button"
             style="margin-left: 20px"
+            data-ng-disabled="!formData.activityCode || !formData.startTime || !formData.endTime"
           >
-            Filter
+            Fetch
           </button>
         </div>
 
@@ -103,38 +179,23 @@
         <table class="table">
           <thead>
             <tr class="graybg">
-              <th>{{'Ref No' | translate}}</th>
+              <th>{{'EOD Date' | translate}}</th>
               <th>{{'Contract Type' | translate}}</th>
-              <th>{{'Start Date' | translate}}</th>
-              <th>{{'Maturity Date' | translate}}</th>
-
-              <th>{{'label.input.amount' | translate}}</th>
-              <th>{{'Rate' | translate}}</th>
-              <th>{{'Tenor' | translate}}</th>
-              <th>{{'Total Interest' | translate}}</th>
-              <th>{{'Total Accrued' | translate}}</th>
               <th>{{'label.input.status' | translate}}</th>
+              <th>{{'Remark' | translate}}</th>
             </tr>
           </thead>
           <tbody>
             <tr
               class="pointer-main"
               dir-paginate="coadata in coadatas | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
-              total-items="totalContracts"
-              pagination-id="contracts"
+              total-items="totalEod"
+              pagination-id="eod"
             >
-              <td class="pointer">{{coadata.referenceNo}}</td>
-              <td class="pointer">{{coadata.contractType}}</td>
-              <td class="pointer">{{coadata.startDate}}</td>
-              <td class="pointer">{{coadata.maturityDate}}</td>
-              <td class="pointer">{{coadata.amount.toLocaleString()}}</td>
-              <td class="pointer">{{coadata.rate}}</td>
-              <td class="pointer">{{coadata.tenor}}</td>
-              <td class="pointer">
-                {{coadata.totalInterest.toLocaleString()}}
-              </td>
-              <td class="pointer">{{coadata.totalAccrued.toLocaleString()}}</td>
+              <td class="pointer">{{coadata.eoddate}}</td>
+              <td class="pointer">{{coadata.activityCode}}</td>
               <td class="pointer">{{coadata.status}}</td>
+              <td class="pointer">{{coadata.remarks}}</td>
             </tr>
           </tbody>
           <tr>
@@ -151,7 +212,7 @@
           boundary-links="true"
           template-url="bower_components/angular-utils-pagination/dirPagination.tpl.html"
           on-page-change="getResultsPage(newPageNumber)"
-          pagination-id="contracts"
+          pagination-id="eod"
         ></dir-pagination-controls>
       </div>
 

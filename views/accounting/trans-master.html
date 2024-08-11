@@ -1,35 +1,35 @@
 <div id="viewlptop"></div>
-<div class="content-container" ng-controller="ContractMasterController">
+<div class="content-container" ng-controller="TransMasterController">
   <ul class="breadcrumb">
     <li>
       <a href="#/accounting">{{'label.anchor.accounting' | translate}}</a>
     </li>
-    <li class="active">{{'label.anchor.contractMaster' | translate}}</li>
+    <li class="active">{{'Trans. Master' | translate}}</li>
   </ul>
 
   <div class="card">
     <div class="content">
       <api-validate></api-validate>
       <div class="toolbar">
-        <h4>{{'label.heading.contractMaster' | translate}}</h4>
+        <h4>{{'Trans. Master' | translate}}</h4>
         <div class="pull-right">
-          <a
+          <!-- <a
             href="#/book-contract"
             class="btn btn-primary"
             has-permission="CREATE_GLACCOUNT"
             ><i class="fa fa-plus"></i>&nbsp;&nbsp;{{'Book Contract' |
             translate}}</a
-          >
+          > -->
         </div>
       </div>
       <div ng-hide="isTreeView">
-        <h4>Filter Contracts</h4>
+        <h4>Filter Transactions</h4>
         <div
           class=""
           style="
             display: grid;
-            grid-template-columns: repeat(5, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(5, minmax(120px, 200px));
+            gap: 10px;
           "
         >
           <div class="">
@@ -61,18 +61,31 @@
 
           <div class="">
             <select
-              chosen="contractTypes"
+              chosen="accountTypes"
               id="tranType"
-              ng-model="formData.contractType"
+              ng-model="formData.accountType"
               class="form-control"
-              ng-options="contractType.code as contractType.name for contractType in contractTypes"
-              value="{{contractType.code}}"
+              ng-options="accountType.code as accountType.name for accountType in accountTypes"
+              value="{{accountType.code}}"
             >
               <option class="displaynone" value="">
-                {{'Contract Type' | translate}}
+                {{'Account Type' | translate}}
               </option>
             </select>
           </div>
+          <div class="">
+            <input
+              style="margin-left: 20px"
+              data-ng-hide="formData.accountType=='GL'"
+              type="text"
+              class="date-disable form-control"
+              id="accountNo"
+              type="text"
+              ng-model="formData.accountNo"
+              placeholder="{{'accountNo' | translate}}"
+            />
+          </div>
+
           <button
             class="btn btn-block btn-primary"
             type="submit"
@@ -103,17 +116,12 @@
         <table class="table">
           <thead>
             <tr class="graybg">
-              <th>{{'Ref No' | translate}}</th>
-              <th>{{'Contract Type' | translate}}</th>
-              <th>{{'Start Date' | translate}}</th>
-              <th>{{'Maturity Date' | translate}}</th>
+              <th>{{'Id' | translate}}</th>
+              <th>{{'GL Code' | translate}}</th>
+              <th>{{'Name' | translate}}</th>
+              <th>{{'Desc' | translate}}</th>
 
-              <th>{{'label.input.amount' | translate}}</th>
-              <th>{{'Rate' | translate}}</th>
-              <th>{{'Tenor' | translate}}</th>
-              <th>{{'Total Interest' | translate}}</th>
-              <th>{{'Total Accrued' | translate}}</th>
-              <th>{{'label.input.status' | translate}}</th>
+              <th>{{'Status' | translate}}</th>
             </tr>
           </thead>
           <tbody>
@@ -121,20 +129,13 @@
               class="pointer-main"
               dir-paginate="coadata in coadatas | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
               total-items="totalContracts"
-              pagination-id="contracts"
+              pagination-id="transs"
             >
-              <td class="pointer">{{coadata.referenceNo}}</td>
-              <td class="pointer">{{coadata.contractType}}</td>
-              <td class="pointer">{{coadata.startDate}}</td>
-              <td class="pointer">{{coadata.maturityDate}}</td>
-              <td class="pointer">{{coadata.amount.toLocaleString()}}</td>
-              <td class="pointer">{{coadata.rate}}</td>
-              <td class="pointer">{{coadata.tenor}}</td>
-              <td class="pointer">
-                {{coadata.totalInterest.toLocaleString()}}
-              </td>
-              <td class="pointer">{{coadata.totalAccrued.toLocaleString()}}</td>
-              <td class="pointer">{{coadata.status}}</td>
+              <td class="pointer">{{coadata.id}}</td>
+              <td class="pointer">{{coadata.glCode}}</td>
+              <td class="pointer">{{coadata.name}}</td>
+              <td class="pointer">{{coadata.description}}</td>
+              <td class="pointer">{{coadata.disabled?"Disabled":"Enabled"}}</td>
             </tr>
           </tbody>
           <tr>
@@ -151,7 +152,7 @@
           boundary-links="true"
           template-url="bower_components/angular-utils-pagination/dirPagination.tpl.html"
           on-page-change="getResultsPage(newPageNumber)"
-          pagination-id="contracts"
+          pagination-id="transs"
         ></dir-pagination-controls>
       </div>
 

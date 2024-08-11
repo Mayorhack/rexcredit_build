@@ -1,0 +1,215 @@
+<div
+  class="col-md-12"
+  ng-controller="BulkImportTellerController"
+  ng-init="refreshImportTable()"
+>
+  <script type="text/ng-template" id="success.html">
+    <div class="modal-header silver" style="text-align:center; border:none" >
+        <h3 class="bolder">Operation Successful</h3>
+    </div>
+    <div class="modal-footer silver" style="text-align:center; border:none">
+        <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+    </div>
+  </script>
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/bulkimport">{{'label.anchor.bulkimport' | translate}}</a>
+    </li>
+    <li class="active">{{'Teller Posting' | translate}}</li>
+  </ul>
+  <api-validate></api-validate>
+
+  <div style="margin-top: 20px" class="panel panel-default" ng-show="false">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{'Teller Posting Template' | translate}}</h3>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <form name="bulkImportTeller" role="form">
+          <div class="form-group">
+            <label class="control-label col-sm-2">
+              {{'label.input.office' | translate}}
+            </label>
+            <div class="col-sm-3">
+              <div>
+                <select
+                  chosen="offices"
+                  id="officeId"
+                  ng-model="formData.officeId"
+                  class="form-control"
+                  ng-options="office.id as office.name for office in offices"
+                  value="{{office.id}}"
+                  ng-change="changeOffice()"
+                >
+                  <option value="">
+                    --{{'label.menu.selectoffice' | translate}}--
+                  </option>
+                </select>
+              </div>
+            </div>
+            &nbsp; &nbsp; &nbsp;
+            <label class="control-label col-sm-2"
+              >{{'label.input.staff' | translate}}</label
+            >
+            <div class="col-sm-3">
+              <select
+                chosen="staffs"
+                id="staffId"
+                ng-model="formData.staffId"
+                class="form-control"
+                ng-options="staff.id as staff.displayName for staff in staffs"
+                value="{{staff.id}}"
+                ng-change="changeStaff()"
+              >
+                <option value="">
+                  --{{'label.menu.selectloanofficer' | translate}}--
+                </option>
+              </select>
+            </div>
+            <a
+              target="_blank"
+              class="btn btn-primary"
+              href="{{hostUrl}}{{first.templateUrl}}{{first.queryParams}}"
+              has-permission="READ_CENTERS"
+              ><i class="fa fa-cloud-download"></i>{{'label.button.download' |
+              translate}}</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{'Teller Posting' | translate}}</h3>
+    </div>
+    <div class="panel-body">
+      <div class="form-group">
+        <form class="form-inline" role="form">
+          <div class="col-sm-2">
+            <input
+              class="date-disable form-control"
+              id="tranDate"
+              type="text"
+              datepicker-pop="dd MMMM yyyy"
+              ng-model="formData.tranDate"
+              is-open="opened"
+              min="'2000-01-01'"
+              max="restrictDate"
+              placeholder="{{'Trans. Date' | translate}}"
+            />
+          </div>
+          <div class="col-sm-2">
+            <input
+              class="date-disable form-control"
+              id="desc"
+              type="text"
+              ng-model="formData.desc"
+              placeholder="{{'Description' | translate}}"
+            />
+          </div>
+          <div class="col-sm-2">
+            <select
+              chosen="names"
+              id="name"
+              ng-model="formData.name"
+              class="form-control"
+              ng-options="name.code as name.name for name in names"
+              value="{{name.code}}"
+            >
+              <option class="displaynone" value="">
+                {{'Name' | translate}}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-sm-2" style="margin-inline: 26px 2px">
+            <input
+              style="max-width: 200px"
+              type="file"
+              id="file"
+              accept=".xls,.xlsx"
+              class="form-control btn btn-default"
+              ngf-select="onFileSelect($files)"
+            />
+          </div>
+          <div class="col-sm-2" style="margin-left: 0px">
+            <input
+              class="date-disable form-control"
+              id="otp"
+              type="text"
+              ng-model="formData.otp"
+              placeholder="{{'OTP' | translate}}"
+            />
+          </div>
+          <button
+            style="
+              margin: 20px 10px;
+              display: block;
+              width: 100%;
+              max-width: 200px;
+            "
+            type="button"
+            class="form-control btn btn-primary col-sm-2"
+            ng-click="upload()"
+          >
+            {{'label.button.upload' | translate}}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default" ng-show="false">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{'label.heading.documents' | translate}}</h3>
+      <button
+        style="margin-left: 1050px"
+        type="button"
+        class="btn btn-primary"
+        ng-click="refreshImportTable()"
+      >
+        <i class="fa fa-repeat"></i> {{'label.button.refresh' | translate}}
+      </button>
+    </div>
+    <div class="panel-body">
+      <table class="table">
+        <thead>
+          <tr class="graybg">
+            <th>{{ 'label.heading.name' | translate }}</th>
+            <th>{{ 'label.heading.importtime' | translate }}</th>
+            <th>{{ 'label.heading.endtime' | translate }}</th>
+            <th>{{ 'label.heading.completed' | translate }}</th>
+            <th>{{ 'label.heading.totalrecords' | translate }}</th>
+            <th>{{ 'label.heading.successcount' | translate }}</th>
+            <th>{{ 'label.heading.failurecount' | translate }}</th>
+            <th>{{ 'label.button.download' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            ng-repeat="import in imports"
+            ng-class="{'bg-success': import.completed, 'bg-danger': !import.completed}"
+          >
+            <td>{{import.name}}</td>
+            <td>{{import.importTime | DateFormat}}</td>
+            <td>{{import.endTime | DateFormat}}</td>
+            <td>{{import.completed}}</td>
+            <td>{{import.totalRecords}}</td>
+            <td>{{import.successCount}}</td>
+            <td>{{import.failureCount}}</td>
+            <td ng-show="import.completed">
+              <a
+                target="_blank"
+                href="{{hostUrl}}{{import.docUrl}}"
+                has-permission="READ_DOCUMENT"
+                ><i class="fa fa-cloud-download"></i
+              ></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="clearfix"></div>
+</div>

@@ -2,7 +2,7 @@ define(['underscore'], function () {
     var styles = {
         css: [
             'fontawesome.a912fc97.css',
-            'styles.12d7ef7b.css'
+            'styles.fb89fbbc.css'
             ]
     };
 

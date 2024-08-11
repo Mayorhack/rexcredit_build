@@ -1,0 +1,263 @@
+<div class="content-container">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/accounting">{{'label.anchor.accounting' | translate}}</a>
+    </li>
+    <li>
+      <a href="#/contract-master">{{'Contract Master' | translate}}</a>
+    </li>
+    <li class="active">{{'Book Contract' | translate}}</li>
+  </ul>
+  <form
+    name="bookcontractform"
+    novalidate=""
+    class="card form-horizontal well"
+    ng-controller="BookContractController"
+    rc-submit="submit()"
+  >
+    <api-validate></api-validate>
+    <fieldset>
+      <legend>{{'Book Contract' | translate}}</legend>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Contract Name' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="contractName"
+            name="contractName"
+            ng-autofocus="true"
+            ng-model="formData.contractName"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tellerId"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'Contract Desc' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="contractDescription"
+            type="text"
+            name="contractDescription"
+            ng-model="formData.contractDescription"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="contractDescription"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Contract Type' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <select
+            chosen="contractTypes"
+            id="contractType"
+            ng-model="formData.contractType"
+            class="form-control"
+            ng-options="contractType.code as contractType.name for contractType in contractTypes"
+            value="{{contractType.code}}"
+          >
+            <option class="displaynone" value="">
+              {{'Contract Type' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tranType"
+          />
+        </div>
+
+        <label class="control-label col-sm-2"
+          >{{'Start Date' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            class="date-disable form-control"
+            id="startDate"
+            type="text"
+            datepicker-pop="dd MMMM yyyy"
+            ng-model="formData.startDate"
+            is-open="opened"
+            min="'2000-01-01'"
+            max="restrictDate"
+            placeholder="{{'Start Date' | translate}}"
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tranType"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Maturity Date' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            class="date-disable form-control"
+            id="endDate"
+            type="text"
+            datepicker-pop="dd MMMM yyyy"
+            ng-model="formData.maturityDate"
+            is-open="opened"
+            min="'2000-01-01'"
+            max="restrictDate"
+            placeholder="{{'Maturity Date' | translate}}"
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="endDate"
+          />
+        </div>
+
+        <label class="control-label col-sm-2"
+          >{{'label.input.sourceAccount' | translate}}<span class="required"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="sourceAccount"
+            name="sourceAccount"
+            ng-autofocus="true"
+            ng-model="formData.sourceAccount"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="sourceAccount"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'label.input.amount' | translate}}<span class="required"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="amount"
+            type="text"
+            name="amount"
+            ng-model="formData.amount"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="amount"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'Tenor' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="tenor"
+            type="text"
+            name="tenor"
+            ng-model="formData.tenor"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tenor"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Rate' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="rate"
+            type="text"
+            name="rate"
+            ng-model="formData.rate"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="rate"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'OTP' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="rate"
+            type="text"
+            name="rate"
+            ng-model="formData.otp"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="otp"
+          />
+        </div>
+      </div>
+
+      <div class="col-md-offset-5">
+        <a id="cancel" ng-href="{{cancel}}" class="btn btn-default"
+          >{{'label.button.cancel' | translate}}</a
+        >
+        <button
+          id="save"
+          type="submit"
+          class="btn btn-primary"
+          has-permission="CREATE_GLACCOUNT"
+        >
+          {{'label.button.save' | translate}}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+</div>

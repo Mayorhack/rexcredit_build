@@ -5,7 +5,11 @@
         apiVer = "/fineract-provider/api/v1",
         tenantIdentifier = "";
       this.setBaseUrl = function (url) {
-        baseUrl = url;
+        if (url === "https://coreweb.slsbank.com") {
+          baseUrl === "https://mifos-backend.slsbank.com";
+        } else {
+          baseUrl = url;
+        }
         console.log(baseUrl);
       };
 
@@ -810,12 +814,46 @@
                 },
               }
             ),
+            bookContractResource: defineResource(
+              apiVer + "/thirdparty/contract-master/book",
+              {},
+              {
+                create: { method: "POST" },
+              }
+            ),
             loanMasterResource: defineResource(
               apiVer + "/loans/",
               {},
               {
                 getAllLoans: {
                   method: "GET",
+                },
+              }
+            ),
+            transMasterResource: defineResource(
+              apiVer + "/acctmaintenance/transaction",
+              {},
+              {
+                getAll: {
+                  method: "POST",
+                },
+              }
+            ),
+            runEodResource: defineResource(
+              apiVer + "/eod/run",
+              {},
+              {
+                run: {
+                  method: "POST",
+                },
+              }
+            ),
+            fetchEodResource: defineResource(
+              apiVer + "/eod/fetch",
+              {},
+              {
+                fetch: {
+                  method: "POST",
                 },
               }
             ),

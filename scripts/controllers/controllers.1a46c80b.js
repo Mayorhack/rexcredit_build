@@ -885,6 +885,82 @@
     });
 }(mifosX.controllers || {}));
 ;(function (module) {
+  mifosX.controllers = _.extend(module, {
+    BookContractController: function (
+      scope,
+      resourceFactory,
+      location,
+      $routeParams
+    ) {
+      scope.coadata = [];
+      scope.accountTypes = [];
+      scope.usageTypes = [];
+      scope.headerTypes = [];
+      scope.contractTypes = [
+        { name: "Takings", code: "TAKINGS" },
+        { name: "Investment", code: "INVESTMENT" },
+        { name: "TBill", code: "TBILL" },
+        { name: "Fixed Deposit", code: "FIXED_DEPOSIT" },
+        { name: "Placement", code: "PLACEMENT" },
+      ];
+
+      if ($routeParams.parent) {
+        scope.cancel = "#/contract-master/" + $routeParams.parent;
+      } else {
+        scope.cancel = "#/accounting_coa";
+      }
+      formatDate = function (date) {
+        if (!date) return "";
+
+        let year = date.getFullYear();
+        let month = (date.getMonth() + 1).toString().padStart(2, "0");
+        let day = date.getDate().toString().padStart(2, "0");
+
+        // Format as YYYY-MM-DD
+        return `${day}-${month}-${year}`;
+      };
+
+      scope.submit = function () {
+        resourceFactory.bookContractResource.create(
+          {
+            ...this.formData,
+            startDate: formatDate(this.formData.startDate),
+            maturityDate: formatDate(this.formData.maturityDate),
+          },
+          function (data) {
+            if (data.responseCode == "000") {
+              location.path("/contract-master");
+            }
+          }
+        );
+      };
+      scope.fetchAccount = function () {
+        resourceFactory.accountLookupResource.get(
+          {
+            accountNumber: scope.formData.beneficiaryAccount,
+            finEntityCode: "MIFOS",
+            finEntityType: "INTERNAL",
+          },
+          function (data) {
+            scope.formData.beneficiaryName = data.name;
+          }
+        );
+      };
+    },
+  });
+  mifosX.ng.application
+    .controller("BookContractController", [
+      "$scope",
+      "ResourceFactory",
+      "$location",
+      "$routeParams",
+      mifosX.controllers.BookContractController,
+    ])
+    .run(function ($log) {
+      $log.info("BookContractController initialized");
+    });
+})(mifosX.controllers || {});
+;(function (module) {
     mifosX.controllers = _.extend(module, {
         BulkImportCOAController: function (scope, resourceFactory, location, API_VERSION, $rootScope, Upload) {
 
@@ -1050,8 +1126,9 @@
       scope.contractTypes = [
         { name: "Takings", code: "TAKINGS" },
         { name: "Investment", code: "INVESTMENT" },
-        { name: "Loan", code: "LOAN" },
-        { name: "Fixed Deposit", code: "FIXED DEPOSIT" },
+        { name: "TBill", code: "TBILL" },
+        { name: "Fixed Deposit", code: "FIXED_DEPOSIT" },
+        { name: "Placement", code: "PLACEMENT" },
       ];
 
       scope.routeTo = function (id) {
@@ -1059,7 +1136,13 @@
       };
       formatDate = function (date) {
         if (!date) return "";
-        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+
+        let year = date.getFullYear();
+        let month = (date.getMonth() + 1).toString().padStart(2, "0");
+        let day = date.getDate().toString().padStart(2, "0");
+
+        // Format as YYYY-MM-DD
+        return `${year}-${month}-${day}`;
       };
       scope.scrollto = function (link) {
         location.hash(link);
@@ -1090,19 +1173,27 @@
       };
 
       scope.ChartsPerPage = 15;
-      getAll = function () {
+      getAll = function (pageNumber) {
         resourceFactory.contractMasterResource.getAllContracts(
           {
             contractType: scope.formData.contractType || "INVESTMENT",
-            endDate: this.formatDate(scope.formData.endDate) || today,
+            endDate:
+              this.formatDate(scope.formData.endDate) ||
+              this.formatDate(new Date()),
             startDate: scope.formData?.startDate
               ? this.formatDate(scope.formData.startDate)
               : "2024-01-01",
+            pageIndex: pageNumber || 0,
+            pageSize: scope.ChartsPerPage,
           },
           function (data) {
             scope.coadatas = data.body.datas;
+            scope.totalContracts = data.body.totalCount;
           }
         );
+      };
+      scope.getResultsPage = function (pageNumber) {
+        getAll(pageNumber - 1);
       };
       getAll();
     },
@@ -1399,6 +1490,153 @@
         $log.info("EditFinancialActivityMappingController initialized");
     });
 }(mifosX.controllers || {}));
+;(function (module) {
+  mifosX.controllers = _.extend(module, {
+    EODController: function (
+      scope,
+      $rootScope,
+      translate,
+      resourceFactory,
+      location,
+      anchorScroll,
+      $uibModal
+    ) {
+      $rootScope.tempNodeID = -100; // variable used to store nodeID (from directive), so it(nodeID) is available for detail-table
+      scope.errorMsg = "";
+      scope.coadata = [];
+      scope.isTreeView = false;
+      today = `${new Date().getFullYear()}-${
+        new Date().getMonth() + 1
+      }-${new Date().getDate()}`;
+      scope.formData = {};
+      scope.activityCodes = [
+        { name: "Run Local Accrual", code: "RUN_LOAN_ACCRUAL" },
+        { name: "Run FD INT Income", code: "RUN_FD_INT_INCOME" },
+        { name: "Run Daily Balance", code: " RUN_DAILY_BAL" },
+      ];
+
+      scope.routeTo = function (id) {
+        location.path("/viewglaccount/" + id);
+      };
+      var SuccessModalInstanceCtrl = function ($scope, $uibModalInstance) {
+        $scope.close = function () {
+          $uibModalInstance.close("activate");
+        };
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss("cancel");
+        };
+      };
+      formatDate = function (date) {
+        if (!date) return "";
+
+        let year = date.getFullYear();
+        let month = (date.getMonth() + 1).toString().padStart(2, "0");
+        let day = date.getDate().toString().padStart(2, "0");
+
+        // Format as YYYY-MM-DD
+        return `${year}-${month}-${day}`;
+      };
+      scope.scrollto = function (link) {
+        location.hash(link);
+        anchorScroll();
+      };
+
+      if (!scope.searchCriteria.acoa) {
+        scope.searchCriteria.acoa = null;
+        scope.saveSC();
+      }
+      runEod = function () {
+        resourceFactory.runEodResource.run(
+          {
+            activityCode: scope.formData.activityCode,
+            remarks: scope.formData.remarks,
+            eODDate: formatDate(scope.formData.eODDate),
+          },
+          function (data) {
+            if (data.responseCode === "000")
+              $uibModal.open({
+                templateUrl: "success.html",
+                controller: SuccessModalInstanceCtrl,
+              });
+            else {
+              scope.errorMsg = data.responseMessage;
+            }
+          }
+        );
+      };
+
+      scope.onRun = function () {
+        // scope.searchCriteria.acoa = scope.filterText || "";
+        // scope.saveSC();
+        // getAll();
+        runEod();
+      };
+      scope.open = function (refNo, status) {
+        scope.formData.refNo = refNo;
+        scope.formData.status = status;
+        $uibModal.open({
+          templateUrl: "otp.html",
+          controller: ModalInstanceCtrl,
+        });
+      };
+
+      scope.ChartsPerPage = 15;
+
+      // scope.$on('$viewContentLoaded', function() {
+      //   scope.onFilter();
+      // });
+
+      // scope.onFilter = function () {
+      //   getAll();
+      // };
+
+      getAll = function (pageNumber) {
+        resourceFactory.fetchEodResource.fetch(
+          {
+            endTime:
+              this.formatDate(scope.formData.endTime) ||
+              this.formatDate(new Date()),
+            startTime: scope.formData?.startTime
+              ? this.formatDate(scope.formData.startTime)
+              : "2024-01-01",
+            pageIndex: pageNumber || 0,
+            pageSize: scope.ChartsPerPage,
+            activityCode: scope.formData.activityCode,
+          },
+          function (data) {
+            if (data.responseCode === "000") {
+              scope.coadatas = data.data;
+              // scope.totalContracts = data.body.totalCount;
+            } else {
+              scope.errorMsg = data.responseMessage;
+            }
+          }
+        );
+      };
+      scope.getResultsPage = function (pageNumber) {
+        getAll(pageNumber - 1);
+      };
+      scope.onFilter = function () {
+        getAll();
+      };
+      getAll();
+    },
+  });
+  mifosX.ng.application
+    .controller("EODController", [
+      "$scope",
+      "$rootScope",
+      "$translate",
+      "ResourceFactory",
+      "$location",
+      "$anchorScroll",
+      "$uibModal",
+      mifosX.controllers.EODController,
+    ])
+    .run(function ($log) {
+      $log.info("EODController initialized");
+    });
+})(mifosX.controllers || {});
 ;(function (module) {
     mifosX.controllers = _.extend(module, {
         FinancialActivityMappingsController: function (scope, resourceFactory, location) {
@@ -1981,6 +2219,113 @@
     ])
     .run(function ($log) {
       $log.info("TellerPostingController initialized");
+    });
+})(mifosX.controllers || {});
+;(function (module) {
+  mifosX.controllers = _.extend(module, {
+    TransMasterController: function (
+      scope,
+      $rootScope,
+      translate,
+      resourceFactory,
+      location,
+      anchorScroll,
+      $uibModal
+    ) {
+      $rootScope.tempNodeID = -100; // variable used to store nodeID (from directive), so it(nodeID) is available for detail-table
+
+      scope.coadata = [];
+      scope.isTreeView = false;
+
+      today = `${new Date().getFullYear()}-${
+        new Date().getMonth() + 1
+      }-${new Date().getDate()}`;
+      scope.formData = { accountType: "GL" };
+      scope.accountTypes = [
+        { name: "Gl", code: "GL" },
+        { name: "Account", code: "ACCOUNT" },
+      ];
+
+      scope.routeTo = function (id) {
+        location.path("/viewglaccount/" + id);
+      };
+      formatDate = function (date) {
+        if (!date) return "";
+
+        let year = date.getFullYear();
+        let month = (date.getMonth() + 1).toString().padStart(2, "0");
+        let day = date.getDate().toString().padStart(2, "0");
+
+        // Format as YYYY-MM-DD
+        return `${day}-${month}-${year}`;
+      };
+      scope.scrollto = function (link) {
+        location.hash(link);
+        anchorScroll();
+      };
+
+      if (!scope.searchCriteria.acoa) {
+        scope.searchCriteria.acoa = null;
+        scope.saveSC();
+      }
+
+      scope.onFilter = function () {
+        scope.searchCriteria.acoa = scope.filterText || "";
+        scope.saveSC();
+        getAll();
+      };
+      scope.open = function (refNo, status) {
+        scope.formData.refNo = refNo;
+        scope.formData.status = status;
+        $uibModal.open({
+          templateUrl: "otp.html",
+          controller: ModalInstanceCtrl,
+        });
+      };
+
+      scope.ChartsPerPage = 15;
+      getAll = function (pageNumber) {
+        resourceFactory.transMasterResource.getAll(
+          {
+            endDate:
+              this.formatDate(scope.formData.endDate) ||
+              this.formatDate(new Date()),
+            startDate: scope.formData?.startDate
+              ? this.formatDate(scope.formData.startDate)
+              : "01-01-2024",
+            pageIndex: pageNumber || 0,
+            pageSize: scope.ChartsPerPage,
+            accountType: scope.formData.accountType,
+            accountNo:
+              scope.formData.accountType != "GL"
+                ? scope.formData.accountNo
+                : "",
+          },
+          function (data) {
+            scope.coadatas = data.data;
+            scope.totalContracts = data.data.length;
+          }
+        );
+      };
+      scope.getResultsPage = function (pageNumber) {
+        getAll(pageNumber - 1);
+      };
+      getAll();
+    },
+  });
+  mifosX.ng.application
+    .controller("TransMasterController", [
+      "$scope",
+      "$rootScope",
+      "$translate",
+      "ResourceFactory",
+      "$location",
+      "$anchorScroll",
+      "$uibModal",
+      mifosX.controllers.TransMasterController,
+    ])
+    .run(function ($log) {
+      $log.info("TransMasterController initialized");
     });
 })(mifosX.controllers || {});
 ;(function (module) {
@@ -22522,6 +22867,164 @@
         $log.info("BulkImportOfficesController initialized");
     });
 }(mifosX.controllers || {}));;(function (module) {
+  mifosX.controllers = _.extend(module, {
+    BulkImportTellerController: function (
+      scope,
+      resourceFactory,
+      location,
+      API_VERSION,
+      $rootScope,
+      Upload,
+      $uibModal
+    ) {
+      scope.first = {};
+      scope.first.templateUrl =
+        API_VERSION +
+        "/offices/downloadtemplate" +
+        "?tenantIdentifier=" +
+        $rootScope.tenantIdentifier +
+        "&locale=" +
+        scope.optlang.code +
+        "&dateFormat=" +
+        scope.df;
+
+      scope.formData = {};
+      scope.onFileSelect = function (files) {
+        scope.formData.file = files[0];
+      };
+      var SuccessModalInstanceCtrl = function ($scope, $uibModalInstance) {
+        $scope.close = function () {
+          $uibModalInstance.close("activate");
+        };
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss("cancel");
+        };
+      };
+      scope.names = [
+        { name: "Run Accrual", code: "RUN_ACCRUAL" },
+        { name: "Run FD INT Income", code: "RUN_FD_INT_INCOME" },
+        { name: "Run Daily Balance", code: " RUN_DAILY_BAL" },
+        {
+          name: "Loan repay Start Rebuild",
+          code: "LOAN_REPAY_START_REBUILD",
+        },
+        {
+          name: "Saving",
+          code: "SAVING_ACCOUNT",
+        },
+        {
+          name: "Saving Rex",
+          code: "SAVING_ACCOUNT_REX",
+        },
+        {
+          name: "Saving Product",
+          code: "SAVING_PRODUCT",
+        },
+        {
+          name: "Loans",
+          code: "LOANS",
+        },
+        {
+          name: "Loan Rex",
+          code: "LOAN_REX",
+        },
+        {
+          name: "Fixed Deposit",
+          code: "FIXED_DEPOSIT",
+        },
+        {
+          name: "Product GL Mapping",
+          code: "PRODUCT_GL_MAPPING",
+        },
+        {
+          name: "Product GL Loan Mapping",
+          code: "PRODUCT_GL_LOAN_MAPPING",
+        },
+        {
+          name: "Tran Type",
+          code: "TRAN_TYPE_UPLOAD",
+        },
+      ];
+      // GL2,
+      //   SAVING_ACCOUNT,
+      //   SAVING_ACCOUNT_REX,
+      //   SAVING_PRODUCT,
+      //   LOANS,
+      //   LOAN_REX,
+      //   FIXED_DEPOSIT,
+      //   PRODUCT_GL_MAPPING,
+      //   PRODUCT_GL_LOAN_MAPPING,
+      //   TRAN_TYPE_UPLOAD,
+      //   GL_BALANCE_UPLOAD,
+      //   BULK_TRAN_UPLOAD,
+      //   TAKINGS;
+
+      // INVESTMENT,
+      //   SAVING_CLIENT_UPDATE,
+      //   LOAN_IPIS,
+      //   RUN_ACCRUAL,
+      //   RUN_FD_INT_INCOME,
+      //   RUN_DAILY_BAL,
+      //   LOAN_REPAY_START_REBUILD;
+
+      scope.refreshImportTable = function () {
+        resourceFactory.importResource.getImports(
+          { entityType: "offices" },
+          function (data) {
+            for (var l in data) {
+              var importdocs = {};
+              importdocs =
+                API_VERSION +
+                "/imports/downloadOutputTemplate?importDocumentId=" +
+                data[l].importId +
+                "&tenantIdentifier=" +
+                $rootScope.tenantIdentifier;
+              data[l].docUrl = importdocs;
+            }
+            scope.imports = data;
+          }
+        );
+      };
+
+      scope.upload = function () {
+        Upload.upload({
+          url: $rootScope.hostUrl + API_VERSION + "/tellerposting/upload",
+          data: {
+            file: scope.formData.file,
+            tranDate: scope.formData.tranDate,
+            desc: scope.formData.desc,
+            name: scope.formData.name,
+            otp: scope.formData.otp,
+          },
+        }).then(function (data) {
+          if (data.data.responseCode === "000") {
+            $uibModal.open({
+              templateUrl: "success.html",
+              controller: SuccessModalInstanceCtrl,
+            });
+          } else {
+            scope.errorMsg = data.data.responseMessage;
+          }
+        });
+      };
+    },
+  });
+  mifosX.ng.application
+    .controller("BulkImportTellerController", [
+      "$scope",
+      "ResourceFactory",
+      "$location",
+      "API_VERSION",
+      "$rootScope",
+      "Upload",
+      "$uibModal",
+      mifosX.controllers.BulkImportTellerController,
+    ])
+    .run(function ($log) {
+      $log.info("BulkImportTellerController initialized");
+    });
+})(mifosX.controllers || {});
+;(function (module) {
     mifosX.controllers = _.extend(module, {
         BulkLoanReassignmentController: function (scope, resourceFactory, route, dateFilter) {
             scope.offices = [];
@@ -26803,6 +27306,7 @@
             scope.product.interestCalculationPeriodType.id;
           scope.formData.transactionProcessingStrategyId =
             scope.product.transactionProcessingStrategyOptions[0].id;
+
           scope.formData.principalVariationsForBorrowerCycle =
             scope.product.principalVariationsForBorrowerCycle;
           scope.formData.interestRateVariationsForBorrowerCycle =
@@ -29159,612 +29663,803 @@
     });
 }(mifosX.controllers || {}));
 ;(function (module) {
-    mifosX.controllers = _.extend(module, {
-        EditLoanProductController: function (scope, resourceFactory, location, routeParams, dateFilter, translate) {
-            scope.formData = {};
-            scope.restrictDate = new Date();
-            scope.charges = [];
-            scope.loanProductConfigurableAttributes = [];
-            scope.showOrHideValue = "show";
-            scope.configureFundOptions = [];
-            scope.specificIncomeAccountMapping = [];
-            scope.penaltySpecificIncomeaccounts = [];
-            scope.configureFundOption = {};
-            scope.date = {};
-            scope.irFlag = false;
-            scope.pvFlag = false;
-            scope.rvFlag = false;
-            scope.interestRecalculationOnDayTypeOptions = [];
-            scope.translate = translate;
-            //Rates
-            scope.rates = [];
-            scope.rateFlag = false;
-            for (var i = 1; i <= 28; i++) {
-                scope.interestRecalculationOnDayTypeOptions.push(i);
+  mifosX.controllers = _.extend(module, {
+    EditLoanProductController: function (
+      scope,
+      resourceFactory,
+      location,
+      routeParams,
+      dateFilter,
+      translate
+    ) {
+      scope.formData = {};
+      scope.restrictDate = new Date();
+      scope.charges = [];
+      scope.loanProductConfigurableAttributes = [];
+      scope.showOrHideValue = "show";
+      scope.configureFundOptions = [];
+      scope.specificIncomeAccountMapping = [];
+      scope.penaltySpecificIncomeaccounts = [];
+      scope.configureFundOption = {};
+      scope.date = {};
+      scope.irFlag = false;
+      scope.pvFlag = false;
+      scope.rvFlag = false;
+      scope.interestRecalculationOnDayTypeOptions = [];
+      scope.translate = translate;
+      //Rates
+      scope.rates = [];
+      scope.rateFlag = false;
+      for (var i = 1; i <= 28; i++) {
+        scope.interestRecalculationOnDayTypeOptions.push(i);
+      }
+
+      resourceFactory.loanProductResource.get(
+        { loanProductId: routeParams.id, template: "true" },
+        function (data) {
+          scope.product = data;
+          scope.ratesEnabled = data.ratesEnabled;
+          scope.assetAccountOptions =
+            scope.product.accountingMappingOptions.assetAccountOptions || [];
+          scope.incomeAccountOptions =
+            scope.product.accountingMappingOptions.incomeAccountOptions || [];
+          scope.expenseAccountOptions =
+            scope.product.accountingMappingOptions.expenseAccountOptions || [];
+          scope.liabilityAccountOptions =
+            data.accountingMappingOptions.liabilityAccountOptions || [];
+          scope.incomeAndLiabilityAccountOptions =
+            scope.incomeAccountOptions.concat(scope.liabilityAccountOptions);
+          scope.penaltyOptions = scope.product.penaltyOptions || [];
+          scope.chargeOptions = scope.product.chargeOptions || [];
+          scope.charges = scope.product.charges || [];
+          if (data.startDate) {
+            scope.date.first = new Date(data.startDate);
+          }
+          if (data.closeDate) {
+            scope.date.second = new Date(data.closeDate);
+          }
+          scope.overduecharges = [];
+          for (var i in scope.penaltyOptions) {
+            if (
+              scope.penaltyOptions[i].chargeTimeType.code ==
+              "chargeTimeType.overdueInstallment"
+            ) {
+              scope.overduecharges.push(scope.penaltyOptions[i]);
+            }
+          }
+          scope.product.interestRecalculationNthDayTypeOptions.push({
+            code: "onDay",
+            id: -2,
+            value: "on day",
+          });
+          scope.formData = {
+            name: scope.product.name,
+            shortName: scope.product.shortName,
+            description: scope.product.description,
+            fundId: scope.product.fundId,
+            description: scope.product.description,
+            includeInBorrowerCycle: scope.product.includeInBorrowerCycle,
+            useBorrowerCycle: scope.product.useBorrowerCycle,
+            currencyCode: scope.product.currency.code,
+            digitsAfterDecimal: scope.product.currency.decimalPlaces,
+            inMultiplesOf: scope.product.currency.inMultiplesOf,
+            principal: scope.product.principal,
+            minPrincipal: scope.product.minPrincipal,
+            maxPrincipal: scope.product.maxPrincipal,
+            numberOfRepayments: scope.product.numberOfRepayments,
+            minNumberOfRepayments: scope.product.minNumberOfRepayments,
+            maxNumberOfRepayments: scope.product.maxNumberOfRepayments,
+            repaymentEvery: scope.product.repaymentEvery,
+            repaymentFrequencyType: scope.product.repaymentFrequencyType.id,
+            interestRatePerPeriod: scope.product.interestRatePerPeriod,
+            minInterestRatePerPeriod: scope.product.minInterestRatePerPeriod,
+            maxInterestRatePerPeriod: scope.product.maxInterestRatePerPeriod,
+            interestRateFrequencyType:
+              scope.product.interestRateFrequencyType.id,
+            amortizationType: scope.product.amortizationType.id,
+            fixedPrincipalPercentagePerInstallment:
+              scope.product.fixedPrincipalPercentagePerInstallment,
+            interestType: scope.product.interestType.id,
+            interestCalculationPeriodType:
+              scope.product.interestCalculationPeriodType.id,
+            allowPartialPeriodInterestCalcualtion:
+              scope.product.allowPartialPeriodInterestCalcualtion,
+            inArrearsTolerance: scope.product.inArrearsTolerance,
+            transactionProcessingStrategyId:
+              scope.product.transactionProcessingStrategyId,
+            transactionProcessingStrategyCode:
+              scope.product.transactionProcessingStrategyCode,
+            graceOnPrincipalPayment: scope.product.graceOnPrincipalPayment,
+            graceOnInterestPayment: scope.product.graceOnInterestPayment,
+            graceOnInterestCharged: scope.product.graceOnInterestCharged,
+            graceOnArrearsAgeing: scope.product.graceOnArrearsAgeing,
+            overdueDaysForNPA: scope.product.overdueDaysForNPA,
+            accountMovesOutOfNPAOnlyOnArrearsCompletion:
+              scope.product.accountMovesOutOfNPAOnlyOnArrearsCompletion,
+            accountingRule: scope.product.accountingRule.id,
+            principalVariationsForBorrowerCycle: [],
+            interestRateVariationsForBorrowerCycle: [],
+            numberOfRepaymentVariationsForBorrowerCycle: [],
+            multiDisburseLoan: scope.product.multiDisburseLoan,
+            maxTrancheCount: scope.product.maxTrancheCount,
+            outstandingLoanBalance: scope.product.outstandingLoanBalance,
+            daysInYearType: scope.product.daysInYearType.id,
+            daysInMonthType: scope.product.daysInMonthType.id,
+            isInterestRecalculationEnabled:
+              scope.product.isInterestRecalculationEnabled,
+            holdGuaranteeFunds: scope.product.holdGuaranteeFunds,
+            minimumDaysBetweenDisbursalAndFirstRepayment:
+              scope.product.minimumDaysBetweenDisbursalAndFirstRepayment,
+            principalThresholdForLastInstallment:
+              scope.product.principalThresholdForLastInstallment,
+            installmentAmountInMultiplesOf:
+              scope.product.installmentAmountInMultiplesOf,
+            canDefineInstallmentAmount:
+              scope.product.canDefineInstallmentAmount,
+            isEqualAmortization: scope.product.isEqualAmortization,
+          };
+
+          if (scope.product.isInterestRecalculationEnabled) {
+            scope.formData.interestRecalculationCompoundingMethod =
+              scope.product.interestRecalculationData.interestRecalculationCompoundingType.id;
+            scope.formData.rescheduleStrategyMethod =
+              scope.product.interestRecalculationData.rescheduleStrategyType.id;
+            scope.formData.recalculationRestFrequencyType =
+              scope.product.interestRecalculationData.recalculationRestFrequencyType.id;
+            scope.formData.recalculationRestFrequencyInterval =
+              scope.product.interestRecalculationData.recalculationRestFrequencyInterval;
+            scope.formData.isArrearsBasedOnOriginalSchedule =
+              scope.product.interestRecalculationData.isArrearsBasedOnOriginalSchedule;
+            scope.formData.preClosureInterestCalculationStrategy =
+              scope.product.interestRecalculationData.preClosureInterestCalculationStrategy.id;
+            if (
+              scope.product.interestRecalculationData
+                .recalculationRestFrequencyOnDay != null
+            ) {
+              scope.formData.recalculationRestFrequencyNthDayType = -2;
+              scope.formData.recalculationRestFrequencyOnDayType =
+                scope.product.interestRecalculationData.recalculationRestFrequencyOnDay;
+            } else {
+              if (
+                scope.product.interestRecalculationData
+                  .recalculationRestFrequencyNthDay != null
+              )
+                scope.formData.recalculationRestFrequencyNthDayType =
+                  scope.product.interestRecalculationData.recalculationRestFrequencyNthDay.id;
+              if (
+                scope.product.interestRecalculationData
+                  .recalculationRestFrequencyWeekday != null
+              )
+                scope.formData.recalculationRestFrequencyDayOfWeekType =
+                  scope.product.interestRecalculationData.recalculationRestFrequencyWeekday.id;
+            }
+            if (scope.formData.interestRecalculationCompoundingMethod != 0) {
+              scope.formData.recalculationCompoundingFrequencyType =
+                scope.product.interestRecalculationData.recalculationCompoundingFrequencyType.id;
+              scope.formData.recalculationCompoundingFrequencyInterval =
+                scope.product.interestRecalculationData.recalculationCompoundingFrequencyInterval;
+
+              if (
+                scope.product.interestRecalculationData
+                  .recalculationCompoundingFrequencyOnDay != null
+              ) {
+                scope.formData.recalculationCompoundingFrequencyNthDayType = -2;
+                scope.formData.recalculationCompoundingFrequencyOnDayType =
+                  scope.product.interestRecalculationData.recalculationCompoundingFrequencyOnDay;
+              } else {
+                if (
+                  scope.product.interestRecalculationData
+                    .recalculationCompoundingFrequencyNthDay != null
+                )
+                  scope.formData.recalculationCompoundingFrequencyNthDayType =
+                    scope.product.interestRecalculationData.recalculationCompoundingFrequencyNthDay.id;
+                if (
+                  scope.product.interestRecalculationData
+                    .recalculationCompoundingFrequencyWeekday != null
+                )
+                  scope.formData.recalculationCompoundingFrequencyDayOfWeekType =
+                    scope.product.interestRecalculationData.recalculationCompoundingFrequencyWeekday.id;
+              }
+            }
+          }
+          if (scope.product.allowAttributeOverrides != null) {
+            console.log(
+              "scope.product.allowAttributeOverrides : ",
+              scope.product.allowAttributeOverrides
+            );
+            scope.amortization =
+              scope.product.allowAttributeOverrides.amortizationType;
+            scope.arrearsTolerance =
+              scope.product.allowAttributeOverrides.inArrearsTolerance;
+            scope.graceOnArrearsAging =
+              scope.product.allowAttributeOverrides.graceOnArrearsAgeing;
+            scope.interestCalcPeriod =
+              scope.product.allowAttributeOverrides.interestCalculationPeriodType;
+            scope.interestMethod =
+              scope.product.allowAttributeOverrides.interestType;
+            scope.graceOnPrincipalAndInterest =
+              scope.product.allowAttributeOverrides.graceOnPrincipalAndInterestPayment;
+            scope.repaymentFrequency =
+              scope.product.allowAttributeOverrides.repaymentEvery;
+            scope.transactionProcessingStrategy =
+              scope.product.allowAttributeOverrides.transactionProcessingStrategyId;
+            scope.transactionProcessingStrategyCode =
+              scope.product.allowAttributeOverrides.transactionProcessingStrategyCode;
+          }
+          if (
+            scope.amortization ||
+            scope.arrearsTolerance ||
+            scope.graceOnArrearsAgeing ||
+            scope.interestCalcPeriod ||
+            scope.interestMethod ||
+            scope.graceOnPrincipalAndInterest ||
+            scope.repaymentFrequency ||
+            scope.transactionProcessingStrategy == true
+          ) {
+            scope.allowAttributeConfiguration = true;
+          } else {
+            scope.allowAttributeConfiguration = false;
+          }
+
+          if (scope.product.holdGuaranteeFunds) {
+            scope.formData.mandatoryGuarantee =
+              scope.product.productGuaranteeData.mandatoryGuarantee;
+            scope.formData.minimumGuaranteeFromOwnFunds =
+              scope.product.productGuaranteeData.minimumGuaranteeFromOwnFunds;
+            scope.formData.minimumGuaranteeFromGuarantor =
+              scope.product.productGuaranteeData.minimumGuaranteeFromGuarantor;
+          }
+
+          _.each(
+            scope.product.principalVariationsForBorrowerCycle,
+            function (variation) {
+              scope.formData.principalVariationsForBorrowerCycle.push({
+                id: variation.id,
+                borrowerCycleNumber: variation.borrowerCycleNumber,
+                valueConditionType: variation.valueConditionType.id,
+                minValue: variation.minValue,
+                maxValue: variation.maxValue,
+                defaultValue: variation.defaultValue,
+              });
+            }
+          );
+
+          _.each(
+            scope.product.interestRateVariationsForBorrowerCycle,
+            function (variation) {
+              scope.formData.interestRateVariationsForBorrowerCycle.push({
+                id: variation.id,
+                borrowerCycleNumber: variation.borrowerCycleNumber,
+                valueConditionType: variation.valueConditionType.id,
+                minValue: variation.minValue,
+                maxValue: variation.maxValue,
+                defaultValue: variation.defaultValue,
+              });
+            }
+          );
+
+          _.each(
+            scope.product.numberOfRepaymentVariationsForBorrowerCycle,
+            function (variation) {
+              scope.formData.numberOfRepaymentVariationsForBorrowerCycle.push({
+                id: variation.id,
+                borrowerCycleNumber: variation.borrowerCycleNumber,
+                valueConditionType: variation.valueConditionType.id,
+                minValue: variation.minValue,
+                maxValue: variation.maxValue,
+                defaultValue: variation.defaultValue,
+              });
+            }
+          );
+
+          scope.setFlag();
+          if (
+            scope.formData.accountingRule == 2 ||
+            scope.formData.accountingRule == 3 ||
+            scope.formData.accountingRule == 4
+          ) {
+            scope.formData.fundSourceAccountId =
+              scope.product.accountingMappings.fundSourceAccount.id;
+            scope.formData.loanPortfolioAccountId =
+              scope.product.accountingMappings.loanPortfolioAccount.id;
+            if (
+              scope.formData.accountingRule == 3 ||
+              scope.formData.accountingRule == 4
+            ) {
+              scope.formData.receivableInterestAccountId =
+                scope.product.accountingMappings.receivableInterestAccount.id;
+              scope.formData.receivableFeeAccountId =
+                scope.product.accountingMappings.receivableFeeAccount.id;
+              scope.formData.receivablePenaltyAccountId =
+                scope.product.accountingMappings.receivablePenaltyAccount.id;
             }
 
-            resourceFactory.loanProductResource.get({loanProductId: routeParams.id, template: 'true'}, function (data) {
-                scope.product = data;
-                scope.ratesEnabled = data.ratesEnabled;
-                scope.assetAccountOptions = scope.product.accountingMappingOptions.assetAccountOptions || [];
-                scope.incomeAccountOptions = scope.product.accountingMappingOptions.incomeAccountOptions || [];
-                scope.expenseAccountOptions = scope.product.accountingMappingOptions.expenseAccountOptions || [];
-                scope.liabilityAccountOptions = data.accountingMappingOptions.liabilityAccountOptions || [];
-                scope.incomeAndLiabilityAccountOptions = scope.incomeAccountOptions.concat(scope.liabilityAccountOptions);
-                scope.penaltyOptions = scope.product.penaltyOptions || [];
-                scope.chargeOptions = scope.product.chargeOptions || [];
-                scope.charges = scope.product.charges || [];
-                if (data.startDate) {
-                    scope.date.first = new Date(data.startDate);
-                }
-                if (data.closeDate) {
-                    scope.date.second = new Date(data.closeDate);
-                }
-                scope.overduecharges = [];
-                for (var i in scope.penaltyOptions) {
-                    if(scope.penaltyOptions[i].chargeTimeType.code == 'chargeTimeType.overdueInstallment')
-                    {
-                        scope.overduecharges.push(scope.penaltyOptions[i]);
-                    }
-                }
-                scope.product.interestRecalculationNthDayTypeOptions.push({"code" : "onDay", "id" : -2, "value" : "on day"});
-                scope.formData = {
-                    name: scope.product.name,
-                    shortName: scope.product.shortName,
-                    description: scope.product.description,
-                    fundId: scope.product.fundId,
-                    description: scope.product.description,
-                    includeInBorrowerCycle: scope.product.includeInBorrowerCycle,
-                    useBorrowerCycle: scope.product.useBorrowerCycle,
-                    currencyCode: scope.product.currency.code,
-                    digitsAfterDecimal: scope.product.currency.decimalPlaces,
-                    inMultiplesOf: scope.product.currency.inMultiplesOf,
-                    principal: scope.product.principal,
-                    minPrincipal: scope.product.minPrincipal,
-                    maxPrincipal: scope.product.maxPrincipal,
-                    numberOfRepayments: scope.product.numberOfRepayments,
-                    minNumberOfRepayments: scope.product.minNumberOfRepayments,
-                    maxNumberOfRepayments: scope.product.maxNumberOfRepayments,
-                    repaymentEvery: scope.product.repaymentEvery,
-                    repaymentFrequencyType: scope.product.repaymentFrequencyType.id,
-                    interestRatePerPeriod: scope.product.interestRatePerPeriod,
-                    minInterestRatePerPeriod: scope.product.minInterestRatePerPeriod,
-                    maxInterestRatePerPeriod: scope.product.maxInterestRatePerPeriod,
-                    interestRateFrequencyType: scope.product.interestRateFrequencyType.id,
-                    amortizationType: scope.product.amortizationType.id,
-                    fixedPrincipalPercentagePerInstallment: scope.product.fixedPrincipalPercentagePerInstallment,
-                    interestType: scope.product.interestType.id,
-                    interestCalculationPeriodType: scope.product.interestCalculationPeriodType.id,
-                    allowPartialPeriodInterestCalcualtion:scope.product.allowPartialPeriodInterestCalcualtion,
-                    inArrearsTolerance: scope.product.inArrearsTolerance,
-                    transactionProcessingStrategyId: scope.product.transactionProcessingStrategyId,
-                    graceOnPrincipalPayment: scope.product.graceOnPrincipalPayment,
-                    graceOnInterestPayment: scope.product.graceOnInterestPayment,
-                    graceOnInterestCharged: scope.product.graceOnInterestCharged,
-                    graceOnArrearsAgeing: scope.product.graceOnArrearsAgeing,
-                    overdueDaysForNPA: scope.product.overdueDaysForNPA,
-                    accountMovesOutOfNPAOnlyOnArrearsCompletion: scope.product.accountMovesOutOfNPAOnlyOnArrearsCompletion,
-                    accountingRule: scope.product.accountingRule.id,
-                    principalVariationsForBorrowerCycle: [],
-                    interestRateVariationsForBorrowerCycle: [],
-                    numberOfRepaymentVariationsForBorrowerCycle: [],
-                    multiDisburseLoan: scope.product.multiDisburseLoan,
-                    maxTrancheCount: scope.product.maxTrancheCount,
-                    outstandingLoanBalance: scope.product.outstandingLoanBalance,
-                    daysInYearType: scope.product.daysInYearType.id,
-                    daysInMonthType: scope.product.daysInMonthType.id,
-                    isInterestRecalculationEnabled: scope.product.isInterestRecalculationEnabled,
-                    holdGuaranteeFunds:scope.product.holdGuaranteeFunds,
-                    minimumDaysBetweenDisbursalAndFirstRepayment: scope.product.minimumDaysBetweenDisbursalAndFirstRepayment,
-                    principalThresholdForLastInstallment: scope.product.principalThresholdForLastInstallment,
-                    installmentAmountInMultiplesOf: scope.product.installmentAmountInMultiplesOf,
-                    canDefineInstallmentAmount : scope.product.canDefineInstallmentAmount,
-                    isEqualAmortization : scope.product.isEqualAmortization,
-                };
+            scope.formData.transfersInSuspenseAccountId =
+              scope.product.accountingMappings.transfersInSuspenseAccount.id;
+            scope.formData.interestOnLoanAccountId =
+              scope.product.accountingMappings.interestOnLoanAccount.id;
+            scope.formData.incomeFromFeeAccountId =
+              scope.product.accountingMappings.incomeFromFeeAccount.id;
+            scope.formData.incomeFromPenaltyAccountId =
+              scope.product.accountingMappings.incomeFromPenaltyAccount.id;
+            scope.formData.incomeFromRecoveryAccountId =
+              scope.product.accountingMappings.incomeFromRecoveryAccount.id;
+            scope.formData.writeOffAccountId =
+              scope.product.accountingMappings.writeOffAccount.id;
+            scope.formData.overpaymentLiabilityAccountId =
+              scope.product.accountingMappings.overpaymentLiabilityAccount.id;
 
-                if (scope.product.isInterestRecalculationEnabled) {
-                    scope.formData.interestRecalculationCompoundingMethod = scope.product.interestRecalculationData.interestRecalculationCompoundingType.id;
-                    scope.formData.rescheduleStrategyMethod = scope.product.interestRecalculationData.rescheduleStrategyType.id;
-                    scope.formData.recalculationRestFrequencyType = scope.product.interestRecalculationData.recalculationRestFrequencyType.id;
-                    scope.formData.recalculationRestFrequencyInterval = scope.product.interestRecalculationData.recalculationRestFrequencyInterval;
-                    scope.formData.isArrearsBasedOnOriginalSchedule = scope.product.interestRecalculationData.isArrearsBasedOnOriginalSchedule;
-                    scope.formData.preClosureInterestCalculationStrategy = scope.product.interestRecalculationData.preClosureInterestCalculationStrategy.id;
-                    if (scope.product.interestRecalculationData.recalculationRestFrequencyOnDay != null) {
-                        scope.formData.recalculationRestFrequencyNthDayType = -2;
-                        scope.formData.recalculationRestFrequencyOnDayType = scope.product.interestRecalculationData.recalculationRestFrequencyOnDay;
-                    } else {
-                        if (scope.product.interestRecalculationData.recalculationRestFrequencyNthDay != null)
-                            scope.formData.recalculationRestFrequencyNthDayType = scope.product.interestRecalculationData.recalculationRestFrequencyNthDay.id;
-                        if (scope.product.interestRecalculationData.recalculationRestFrequencyWeekday != null)
-                            scope.formData.recalculationRestFrequencyDayOfWeekType = scope.product.interestRecalculationData.recalculationRestFrequencyWeekday.id;
-                    }
-                    if(scope.formData.interestRecalculationCompoundingMethod != 0){
-                        scope.formData.recalculationCompoundingFrequencyType = scope.product.interestRecalculationData.recalculationCompoundingFrequencyType.id;
-                        scope.formData.recalculationCompoundingFrequencyInterval = scope.product.interestRecalculationData.recalculationCompoundingFrequencyInterval;
-                        
-                        if (scope.product.interestRecalculationData.recalculationCompoundingFrequencyOnDay != null) {
-                            scope.formData.recalculationCompoundingFrequencyNthDayType = -2;
-                            scope.formData.recalculationCompoundingFrequencyOnDayType = scope.product.interestRecalculationData.recalculationCompoundingFrequencyOnDay;
-                        } else {
-                            if (scope.product.interestRecalculationData.recalculationCompoundingFrequencyNthDay != null)
-                                scope.formData.recalculationCompoundingFrequencyNthDayType = scope.product.interestRecalculationData.recalculationCompoundingFrequencyNthDay.id;
-                            if (scope.product.interestRecalculationData.recalculationCompoundingFrequencyWeekday != null)
-                                scope.formData.recalculationCompoundingFrequencyDayOfWeekType = scope.product.interestRecalculationData.recalculationCompoundingFrequencyWeekday.id;
-                        }
-                    }
-
-                }
-                if(scope.product.allowAttributeOverrides != null){
-                    console.log('scope.product.allowAttributeOverrides : ',scope.product.allowAttributeOverrides);
-                    scope.amortization = scope.product.allowAttributeOverrides.amortizationType;
-                    scope.arrearsTolerance = scope.product.allowAttributeOverrides.inArrearsTolerance;
-                    scope.graceOnArrearsAging = scope.product.allowAttributeOverrides.graceOnArrearsAgeing;
-                    scope.interestCalcPeriod = scope.product.allowAttributeOverrides.interestCalculationPeriodType;
-                    scope.interestMethod = scope.product.allowAttributeOverrides.interestType;
-                    scope.graceOnPrincipalAndInterest = scope.product.allowAttributeOverrides.graceOnPrincipalAndInterestPayment;
-                    scope.repaymentFrequency = scope.product.allowAttributeOverrides.repaymentEvery;
-                    scope.transactionProcessingStrategy = scope.product.allowAttributeOverrides.transactionProcessingStrategyId;
-                }
-                if(scope.amortization || scope.arrearsTolerance || scope.graceOnArrearsAgeing ||
-                scope.interestCalcPeriod || scope.interestMethod || scope.graceOnPrincipalAndInterest ||
-                scope.repaymentFrequency || scope.transactionProcessingStrategy == true){
-                    scope.allowAttributeConfiguration = true;
-                }
-                else{
-                    scope.allowAttributeConfiguration = false;
-                }
-
-                if (scope.product.holdGuaranteeFunds) {
-                    scope.formData.mandatoryGuarantee = scope.product.productGuaranteeData.mandatoryGuarantee;
-                    scope.formData.minimumGuaranteeFromOwnFunds = scope.product.productGuaranteeData.minimumGuaranteeFromOwnFunds;
-                    scope.formData.minimumGuaranteeFromGuarantor = scope.product.productGuaranteeData.minimumGuaranteeFromGuarantor;
-                }
-
-                _.each(scope.product.principalVariationsForBorrowerCycle, function (variation) {
-                    scope.formData.principalVariationsForBorrowerCycle.push({
-                        id: variation.id,
-                        borrowerCycleNumber: variation.borrowerCycleNumber,
-                        valueConditionType: variation.valueConditionType.id,
-                        minValue: variation.minValue,
-                        maxValue: variation.maxValue,
-                        defaultValue: variation.defaultValue
-                    })
+            _.each(
+              scope.product.paymentChannelToFundSourceMappings,
+              function (fundSource) {
+                scope.configureFundOptions.push({
+                  paymentTypeId: fundSource.paymentType.id,
+                  fundSourceAccountId: fundSource.fundSourceAccount.id,
+                  paymentTypeOptions: scope.product.paymentTypeOptions,
+                  assetAccountOptions: scope.assetAccountOptions,
                 });
+              }
+            );
 
-                _.each(scope.product.interestRateVariationsForBorrowerCycle, function (variation) {
-                    scope.formData.interestRateVariationsForBorrowerCycle.push({
-                        id: variation.id,
-                        borrowerCycleNumber: variation.borrowerCycleNumber,
-                        valueConditionType: variation.valueConditionType.id,
-                        minValue: variation.minValue,
-                        maxValue: variation.maxValue,
-                        defaultValue: variation.defaultValue
-                    })
-                });
-
-                _.each(scope.product.numberOfRepaymentVariationsForBorrowerCycle, function (variation) {
-                    scope.formData.numberOfRepaymentVariationsForBorrowerCycle.push({
-                        id: variation.id,
-                        borrowerCycleNumber: variation.borrowerCycleNumber,
-                        valueConditionType: variation.valueConditionType.id,
-                        minValue: variation.minValue,
-                        maxValue: variation.maxValue,
-                        defaultValue: variation.defaultValue
-                    })
-                });
-
-                scope.setFlag();
-                if (scope.formData.accountingRule == 2 || scope.formData.accountingRule == 3 || scope.formData.accountingRule == 4) {
-                    scope.formData.fundSourceAccountId = scope.product.accountingMappings.fundSourceAccount.id;
-                    scope.formData.loanPortfolioAccountId = scope.product.accountingMappings.loanPortfolioAccount.id;
-                    if (scope.formData.accountingRule == 3 || scope.formData.accountingRule == 4) {
-                        scope.formData.receivableInterestAccountId = scope.product.accountingMappings.receivableInterestAccount.id;
-                        scope.formData.receivableFeeAccountId = scope.product.accountingMappings.receivableFeeAccount.id;
-                        scope.formData.receivablePenaltyAccountId = scope.product.accountingMappings.receivablePenaltyAccount.id;
-                    }
-
-                    scope.formData.transfersInSuspenseAccountId = scope.product.accountingMappings.transfersInSuspenseAccount.id;
-                    scope.formData.interestOnLoanAccountId = scope.product.accountingMappings.interestOnLoanAccount.id;
-                    scope.formData.incomeFromFeeAccountId = scope.product.accountingMappings.incomeFromFeeAccount.id;
-                    scope.formData.incomeFromPenaltyAccountId = scope.product.accountingMappings.incomeFromPenaltyAccount.id;
-                    scope.formData.incomeFromRecoveryAccountId = scope.product.accountingMappings.incomeFromRecoveryAccount.id;
-                    scope.formData.writeOffAccountId = scope.product.accountingMappings.writeOffAccount.id;
-                    scope.formData.overpaymentLiabilityAccountId = scope.product.accountingMappings.overpaymentLiabilityAccount.id;
-
-                    _.each(scope.product.paymentChannelToFundSourceMappings, function (fundSource) {
-                        scope.configureFundOptions.push({
-                            paymentTypeId: fundSource.paymentType.id,
-                            fundSourceAccountId: fundSource.fundSourceAccount.id,
-                            paymentTypeOptions: scope.product.paymentTypeOptions,
-                            assetAccountOptions: scope.assetAccountOptions
-                        })
-                    });
-
-                    _.each(scope.product.feeToIncomeAccountMappings, function (fees) {
-                        scope.specificIncomeAccountMapping.push({
-                            chargeId: fees.charge.id,
-                            incomeAccountId: fees.incomeAccount.id
-                        })
-                    });
-
-                    _.each(scope.product.penaltyToIncomeAccountMappings, function (penalty) {
-                        scope.penaltySpecificIncomeaccounts.push({
-                            chargeId: penalty.charge.id,
-                            incomeAccountId: penalty.incomeAccount.id
-                        })
-                    });
-                }
-
-                scope.formData.isLinkedToFloatingInterestRates = data.isLinkedToFloatingInterestRates ;
-                scope.formData.floatingRatesId = data.floatingRateId ;
-                scope.formData.interestRateDifferential = data.interestRateDifferential ;
-                scope.formData.isFloatingInterestRateCalculationAllowed = data.isFloatingInterestRateCalculationAllowed ;
-                scope.formData.minDifferentialLendingRate = data.minDifferentialLendingRate ;
-                scope.formData.defaultDifferentialLendingRate = data.defaultDifferentialLendingRate ;
-                scope.formData.maxDifferentialLendingRate = data.maxDifferentialLendingRate ;
-                scope.floatingRateOptions = data.floatingRateOptions ;
-                scope.formData.allowVariableInstallments = scope.product.allowVariableInstallments ;
-                scope.formData.minimumGap = scope.product.minimumGap;
-                scope.formData.maximumGap = scope.product.maximumGap;
-                scope.formData.canUseForTopup = scope.product.canUseForTopup;
-
-                //Rate Module
-                scope.formData.rates = scope.product.rates;
-                scope.rateOptions = scope.product.rateOptions || [];
-                scope.calculatedRatePerPeriod = scope.product.interestRatePerPeriod;
-                scope.enableRates = scope.product.isRatesEnabled;
-
-                if (scope.enableRates){
-                  if (scope.formData.rates && scope.formData.rates.length>0){
-                    scope.rateFlag=true;
-                  }
-                  scope.formData.rates.forEach(function(rate){
-                    scope.rateOptions.forEach(function(rateOption, index, array){
-                      if(rate.name === rateOption.name){
-                        scope.rateOptions.splice(index,1);
-                      }
-                    });
-                  });
-                }
+            _.each(scope.product.feeToIncomeAccountMappings, function (fees) {
+              scope.specificIncomeAccountMapping.push({
+                chargeId: fees.charge.id,
+                incomeAccountId: fees.incomeAccount.id,
+              });
             });
 
-            //Rate
-            scope.rateSelected = function(currentRate){
-
-                if(currentRate){
-                    scope.formData.rates.push(currentRate);
-                    scope.rateOptions.splice(scope.rateOptions.indexOf(currentRate),1);
-                    scope.currentRate = '';
-                    scope.calculateRates();
-                }
-            };
-
-            scope.calculateRates = function(){
-                var total = 0;
-                var minRate = 0;
-                scope.formData.rates.forEach(function(rate){
-                    if(rate.percentage < minRate || minRate === 0){
-                        minRate = rate.percentage;
-                    }
-                    total += rate.percentage;
+            _.each(
+              scope.product.penaltyToIncomeAccountMappings,
+              function (penalty) {
+                scope.penaltySpecificIncomeaccounts.push({
+                  chargeId: penalty.charge.id,
+                  incomeAccountId: penalty.incomeAccount.id,
                 });
+              }
+            );
+          }
 
-                if (minRate===0){
-                  minRate=undefined;
-                }
-                if (total===0){
-                  total=undefined;
-                  scope.rateFlag=false;
-                }
-                scope.formData.minInterestRatePerPeriod = minRate;
+          scope.formData.isLinkedToFloatingInterestRates =
+            data.isLinkedToFloatingInterestRates;
+          scope.formData.floatingRatesId = data.floatingRateId;
+          scope.formData.interestRateDifferential =
+            data.interestRateDifferential;
+          scope.formData.isFloatingInterestRateCalculationAllowed =
+            data.isFloatingInterestRateCalculationAllowed;
+          scope.formData.minDifferentialLendingRate =
+            data.minDifferentialLendingRate;
+          scope.formData.defaultDifferentialLendingRate =
+            data.defaultDifferentialLendingRate;
+          scope.formData.maxDifferentialLendingRate =
+            data.maxDifferentialLendingRate;
+          scope.floatingRateOptions = data.floatingRateOptions;
+          scope.formData.allowVariableInstallments =
+            scope.product.allowVariableInstallments;
+          scope.formData.minimumGap = scope.product.minimumGap;
+          scope.formData.maximumGap = scope.product.maximumGap;
+          scope.formData.canUseForTopup = scope.product.canUseForTopup;
 
-                //Assign the same total range to this values.
-                scope.formData.interestRatePerPeriod = total;
-                scope.formData.maxInterestRatePerPeriod = total;
-                scope.calculatedRatePerPeriod = total;
+          //Rate Module
+          scope.formData.rates = scope.product.rates;
+          scope.rateOptions = scope.product.rateOptions || [];
+          scope.calculatedRatePerPeriod = scope.product.interestRatePerPeriod;
+          scope.enableRates = scope.product.isRatesEnabled;
 
-                console.log(scope.formData);
-
-            };
-
-            scope.deleteRate = function (index){
-                scope.rateOptions.push(scope.formData.rates[index]);
-                scope.formData.rates.splice(index,1);
-                scope.calculateRates();
-            };
-
-
-            scope.chargeSelected = function (chargeId) {
-                if(chargeId){
-                    resourceFactory.chargeResource.get({chargeId: chargeId, template: 'true'}, this.formData, function (data) {
-                        data.chargeId = data.id;
-                        scope.charges.push(data);
-                        //to charge select box empty
-                        scope.chargeId = '';
-                        scope.penalityId = '';
-                    });
-                }
-            };
-
-            scope.deleteCharge = function (index) {
-                scope.charges.splice(index, 1);
-            };
-
-            //advanced accounting rule
-            scope.showOrHide = function (showOrHideValue) {
-                if (showOrHideValue == "show") {
-                    scope.showOrHideValue = 'hide';
-                }
-
-                if (showOrHideValue == "hide") {
-                    scope.showOrHideValue = 'show';
-                }
-            };
-
-            scope.addConfigureFundSource = function () {
-                if (scope.product.paymentTypeOptions && scope.product.paymentTypeOptions.length > 0 &&
-                    scope.assetAccountOptions && scope.assetAccountOptions.length > 0) {
-                    scope.configureFundOptions.push({
-                        paymentTypeId: scope.product.paymentTypeOptions[0].id,
-                        fundSourceAccountId: scope.assetAccountOptions[0].id,
-                        paymentTypeOptions: scope.product.paymentTypeOptions,
-                        assetAccountOptions: scope.assetAccountOptions
-                    });
-                }
-            };
-
-            scope.mapFees = function () {
-                if (scope.product.chargeOptions && scope.product.chargeOptions.length > 0 && scope.incomeAccountOptions && scope.incomeAccountOptions.length > 0) {
-                    scope.specificIncomeAccountMapping.push({
-                        chargeId: scope.chargeOptions.length > 0 ? scope.chargeOptions[0].id : '',
-                        incomeAccountId: scope.incomeAndLiabilityAccountOptions.length > 0 ? scope.incomeAndLiabilityAccountOptions[0].id : ''
-                    });
-                }
-            };
-
-            scope.mapPenalty = function () {
-                if (scope.product.penaltyOptions && scope.product.penaltyOptions.length > 0 && scope.incomeAccountOptions && scope.incomeAccountOptions.length > 0) {
-                    scope.penaltySpecificIncomeaccounts.push({
-                        chargeId: scope.penaltyOptions.length > 0 ? scope.penaltyOptions[0].id : '',
-                        incomeAccountId: scope.incomeAccountOptions.length > 0 ? scope.incomeAccountOptions[0].id : ''
-                    });
-                }
-            };
-
-            scope.addPrincipalVariation = function () {
-                scope.pvFlag = true;
-                scope.formData.principalVariationsForBorrowerCycle.push({
-                    valueConditionType: scope.product.valueConditionTypeOptions[0].id
-                })
-            };
-            scope.addInterestRateVariation = function () {
-                scope.irFlag = true;
-                scope.formData.interestRateVariationsForBorrowerCycle.push({
-                    valueConditionType: scope.product.valueConditionTypeOptions[0].id
-                })
-            };
-            scope.addNumberOfRepaymentVariation = function () {
-                scope.rvFlag = true;
-                scope.formData.numberOfRepaymentVariationsForBorrowerCycle.push({
-                    valueConditionType: scope.product.valueConditionTypeOptions[0].id
-                })
-            };
-
-
-            scope.deleteFund = function (index) {
-                scope.configureFundOptions.splice(index, 1);
-            };
-
-            scope.deleteFee = function (index) {
-                scope.specificIncomeAccountMapping.splice(index, 1);
-            };
-
-            scope.deletePenalty = function (index) {
-                scope.penaltySpecificIncomeaccounts.splice(index, 1);
-            };
-
-            scope.deletePrincipalVariation = function (index) {
-                scope.formData.principalVariationsForBorrowerCycle.splice(index, 1);
-            };
-
-            scope.deleteInterestRateVariation = function (index) {
-                scope.formData.interestRateVariationsForBorrowerCycle.splice(index, 1);
-            };
-
-            scope.deleterepaymentVariation = function (index) {
-                scope.formData.numberOfRepaymentVariationsForBorrowerCycle.splice(index, 1);
-            };
-
-            scope.isAccountingEnabled = function () {
-                if (scope.formData.accountingRule == 2 || scope.formData.accountingRule == 3 || scope.formData.accountingRule == 4) {
-                    return true;
-                }
-                return false;
+          if (scope.enableRates) {
+            if (scope.formData.rates && scope.formData.rates.length > 0) {
+              scope.rateFlag = true;
             }
-
-            scope.isAccrualAccountingEnabled = function () {
-                if (scope.formData.accountingRule == 3 || scope.formData.accountingRule == 4) {
-                    return true;
+            scope.formData.rates.forEach(function (rate) {
+              scope.rateOptions.forEach(function (rateOption, index, array) {
+                if (rate.name === rateOption.name) {
+                  scope.rateOptions.splice(index, 1);
                 }
-                return false;
-            }
-
-            scope.setFlag = function () {
-                if (scope.formData.principalVariationsForBorrowerCycle) {
-                    scope.pvFlag = true;
-                }
-                if (scope.formData.numberOfRepaymentVariationsForBorrowerCycle) {
-                    scope.rvFlag = true;
-                }
-                if (scope.formData.interestRateVariationsForBorrowerCycle) {
-                    scope.irFlag = true;
-                }
-            };
-            scope.setFlag();
-
-            scope.setAttributeValues = function(){
-                if(scope.allowAttributeConfiguration == false){
-                    scope.amortization = false;
-                    scope.arrearsTolerance = false;
-                    scope.graceOnArrearsAging = false;
-                    scope.interestCalcPeriod = false;
-                    scope.interestMethod = false;
-                    scope.graceOnPrincipalAndInterest = false;
-                    scope.repaymentFrequency = false;
-                    scope.transactionProcessingStrategy = false;
-                }
-            }
-
-            scope.submit = function () {
-                scope.paymentChannelToFundSourceMappings = [];
-                scope.feeToIncomeAccountMappings = [];
-                scope.penaltyToIncomeAccountMappings = [];
-                scope.chargesSelected = [];
-                scope.selectedConfigurableAttributes = [];
-                var reqFirstDate = dateFilter(scope.date.first, scope.df);
-                var reqSecondDate = dateFilter(scope.date.second, scope.df);
-                var temp = '';
-                //configure fund sources for payment channels
-                for (var i in scope.configureFundOptions) {
-                    temp = {
-                        paymentTypeId: scope.configureFundOptions[i].paymentTypeId,
-                        fundSourceAccountId: scope.configureFundOptions[i].fundSourceAccountId
-                    }
-                    scope.paymentChannelToFundSourceMappings.push(temp);
-                }
-
-                //map fees to specific income accounts
-                for (var i in scope.specificIncomeAccountMapping) {
-                    temp = {
-                        chargeId: scope.specificIncomeAccountMapping[i].chargeId,
-                        incomeAccountId: scope.specificIncomeAccountMapping[i].incomeAccountId
-                    }
-                    scope.feeToIncomeAccountMappings.push(temp);
-                }
-
-                //map penalties to specific income accounts
-                for (var i in scope.penaltySpecificIncomeaccounts) {
-                    temp = {
-                        chargeId: scope.penaltySpecificIncomeaccounts[i].chargeId,
-                        incomeAccountId: scope.penaltySpecificIncomeaccounts[i].incomeAccountId
-                    }
-                    scope.penaltyToIncomeAccountMappings.push(temp);
-                }
-
-                for (var i in scope.charges) {
-                    temp = {
-                        id: scope.charges[i].id
-                    }
-                    scope.chargesSelected.push(temp);
-                }
-
-                if(scope.allowAttributeConfiguration == false){
-                    scope.amortization = false;
-                    scope.arrearsTolerance = false;
-                    scope.graceOnArrearsAging = false;
-                    scope.interestCalcPeriod = false;
-                    scope.interestMethod = false;
-                    scope.graceOnPrincipalAndInterest = false;
-                    scope.repaymentFrequency = false;
-                    scope.transactionProcessingStrategy = false;
-                }
-
-                scope.selectedConfigurableAttributes = 
-		{amortizationType:scope.amortization,
-                    interestType:scope.interestMethod,
-                    transactionProcessingStrategyId:scope.transactionProcessingStrategy,
-                    interestCalculationPeriodType:scope.interestCalcPeriod,
-                    inArrearsTolerance:scope.arrearsTolerance,
-                    repaymentEvery:scope.repaymentFrequency,
-                    graceOnPrincipalAndInterestPayment:scope.graceOnPrincipalAndInterest,
-                    graceOnArrearsAgeing:scope.graceOnArrearsAging};
-
-                this.formData.paymentChannelToFundSourceMappings = scope.paymentChannelToFundSourceMappings;
-                this.formData.feeToIncomeAccountMappings = scope.feeToIncomeAccountMappings;
-                this.formData.penaltyToIncomeAccountMappings = scope.penaltyToIncomeAccountMappings;
-                this.formData.charges = scope.chargesSelected;
-                this.formData.allowAttributeOverrides = scope.selectedConfigurableAttributes;
-                this.formData.dateFormat = scope.df;
-                this.formData.locale = scope.optlang.code;
-                this.formData.startDate = reqFirstDate;
-                this.formData.closeDate = reqSecondDate;
-
-                //Interest recalculation data
-                if (this.formData.isInterestRecalculationEnabled) {
-                    var restFrequencyDate = dateFilter(scope.date.recalculationRestFrequencyDate, scope.df);
-                    scope.formData.recalculationRestFrequencyDate = restFrequencyDate;
-                    var compoundingFrequencyDate = dateFilter(scope.date.recalculationCompoundingFrequencyDate, scope.df);
-                    scope.formData.recalculationCompoundingFrequencyDate = compoundingFrequencyDate;
-                }else{
-                    delete scope.formData.interestRecalculationCompoundingMethod;
-                    delete scope.formData.rescheduleStrategyMethod;
-                    delete scope.formData.recalculationRestFrequencyType;
-                    delete scope.formData.recalculationRestFrequencyInterval;
-                }
-
-                if(this.formData.isLinkedToFloatingInterestRates) {
-                    delete scope.formData.interestRatePerPeriod ;
-                    delete scope.formData.minInterestRatePerPeriod ;
-                    delete scope.formData.maxInterestRatePerPeriod ;
-                    delete scope.formData.interestRateFrequencyType ;
-                }else {
-                    delete scope.formData.floatingRatesId ;
-                    delete scope.formData.interestRateDifferential ;
-                    delete scope.formData.isFloatingInterestRateCalculationAllowed ;
-                    delete scope.formData.minDifferentialLendingRate ;
-                    delete scope.formData.defaultDifferentialLendingRate ;
-                    delete scope.formData.maxDifferentialLendingRate ;
-
-                }
-
-                //If Variable Installments is not allowed for this product, remove the corresponding formData
-                if(!this.formData.allowVariableInstallments) {
-                    delete scope.formData.minimumGap ;
-                    delete scope.formData.maximumGap ;
-                }
-
-                if(this.formData.interestCalculationPeriodType == 0){
-                    this.formData.allowPartialPeriodInterestCalcualtion = false;
-                }
-
-                if(this.formData.amortizationType != 0){
-                    this.formData.fixedPrincipalPercentagePerInstallment = null;
-                }
-
-                if (this.formData.recalculationCompoundingFrequencyType == 4) {
-                    if(this.formData.recalculationCompoundingFrequencyNthDayType == -2) {
-                        delete this.formData.recalculationCompoundingFrequencyNthDayType;
-                        delete this.formData.recalculationCompoundingFrequencyDayOfWeekType;
-                    } else {
-                        delete this.formData.recalculationCompoundingFrequencyOnDayType;
-                    }
-                } else if (this.formData.recalculationCompoundingFrequencyType == 3){
-                    delete this.formData.recalculationCompoundingFrequencyOnDayType;
-                    delete this.formData.recalculationCompoundingFrequencyNthDayType;
-                }
-
-                if (this.formData.recalculationRestFrequencyType == 4) {
-                    if(this.formData.recalculationRestFrequencyNthDayType == -2) {
-                        delete this.formData.recalculationRestFrequencyNthDayType;
-                        delete this.formData.recalculationRestFrequencyDayOfWeekType;
-                    } else {
-                        delete this.formData.recalculationRestFrequencyOnDayType;
-                    }
-                } else if (this.formData.recalculationRestFrequencyType == 3){
-                    delete this.formData.recalculationRestFrequencyOnDayType;
-                    delete this.formData.recalculationRestFrequencyNthDayType;
-                }
-
-                resourceFactory.loanProductResource.put({loanProductId: routeParams.id}, this.formData, function (data) {
-                    location.path('/viewloanproduct/' + data.resourceId);
-                });
-            }
+              });
+            });
+          }
         }
+      );
+
+      //Rate
+      scope.rateSelected = function (currentRate) {
+        if (currentRate) {
+          scope.formData.rates.push(currentRate);
+          scope.rateOptions.splice(scope.rateOptions.indexOf(currentRate), 1);
+          scope.currentRate = "";
+          scope.calculateRates();
+        }
+      };
+
+      scope.calculateRates = function () {
+        var total = 0;
+        var minRate = 0;
+        scope.formData.rates.forEach(function (rate) {
+          if (rate.percentage < minRate || minRate === 0) {
+            minRate = rate.percentage;
+          }
+          total += rate.percentage;
+        });
+
+        if (minRate === 0) {
+          minRate = undefined;
+        }
+        if (total === 0) {
+          total = undefined;
+          scope.rateFlag = false;
+        }
+        scope.formData.minInterestRatePerPeriod = minRate;
+
+        //Assign the same total range to this values.
+        scope.formData.interestRatePerPeriod = total;
+        scope.formData.maxInterestRatePerPeriod = total;
+        scope.calculatedRatePerPeriod = total;
+
+        console.log(scope.formData);
+      };
+
+      scope.deleteRate = function (index) {
+        scope.rateOptions.push(scope.formData.rates[index]);
+        scope.formData.rates.splice(index, 1);
+        scope.calculateRates();
+      };
+
+      scope.chargeSelected = function (chargeId) {
+        if (chargeId) {
+          resourceFactory.chargeResource.get(
+            { chargeId: chargeId, template: "true" },
+            this.formData,
+            function (data) {
+              data.chargeId = data.id;
+              scope.charges.push(data);
+              //to charge select box empty
+              scope.chargeId = "";
+              scope.penalityId = "";
+            }
+          );
+        }
+      };
+
+      scope.deleteCharge = function (index) {
+        scope.charges.splice(index, 1);
+      };
+
+      //advanced accounting rule
+      scope.showOrHide = function (showOrHideValue) {
+        if (showOrHideValue == "show") {
+          scope.showOrHideValue = "hide";
+        }
+
+        if (showOrHideValue == "hide") {
+          scope.showOrHideValue = "show";
+        }
+      };
+
+      scope.addConfigureFundSource = function () {
+        if (
+          scope.product.paymentTypeOptions &&
+          scope.product.paymentTypeOptions.length > 0 &&
+          scope.assetAccountOptions &&
+          scope.assetAccountOptions.length > 0
+        ) {
+          scope.configureFundOptions.push({
+            paymentTypeId: scope.product.paymentTypeOptions[0].id,
+            fundSourceAccountId: scope.assetAccountOptions[0].id,
+            paymentTypeOptions: scope.product.paymentTypeOptions,
+            assetAccountOptions: scope.assetAccountOptions,
+          });
+        }
+      };
+
+      scope.mapFees = function () {
+        if (
+          scope.product.chargeOptions &&
+          scope.product.chargeOptions.length > 0 &&
+          scope.incomeAccountOptions &&
+          scope.incomeAccountOptions.length > 0
+        ) {
+          scope.specificIncomeAccountMapping.push({
+            chargeId:
+              scope.chargeOptions.length > 0 ? scope.chargeOptions[0].id : "",
+            incomeAccountId:
+              scope.incomeAndLiabilityAccountOptions.length > 0
+                ? scope.incomeAndLiabilityAccountOptions[0].id
+                : "",
+          });
+        }
+      };
+
+      scope.mapPenalty = function () {
+        if (
+          scope.product.penaltyOptions &&
+          scope.product.penaltyOptions.length > 0 &&
+          scope.incomeAccountOptions &&
+          scope.incomeAccountOptions.length > 0
+        ) {
+          scope.penaltySpecificIncomeaccounts.push({
+            chargeId:
+              scope.penaltyOptions.length > 0 ? scope.penaltyOptions[0].id : "",
+            incomeAccountId:
+              scope.incomeAccountOptions.length > 0
+                ? scope.incomeAccountOptions[0].id
+                : "",
+          });
+        }
+      };
+
+      scope.addPrincipalVariation = function () {
+        scope.pvFlag = true;
+        scope.formData.principalVariationsForBorrowerCycle.push({
+          valueConditionType: scope.product.valueConditionTypeOptions[0].id,
+        });
+      };
+      scope.addInterestRateVariation = function () {
+        scope.irFlag = true;
+        scope.formData.interestRateVariationsForBorrowerCycle.push({
+          valueConditionType: scope.product.valueConditionTypeOptions[0].id,
+        });
+      };
+      scope.addNumberOfRepaymentVariation = function () {
+        scope.rvFlag = true;
+        scope.formData.numberOfRepaymentVariationsForBorrowerCycle.push({
+          valueConditionType: scope.product.valueConditionTypeOptions[0].id,
+        });
+      };
+
+      scope.deleteFund = function (index) {
+        scope.configureFundOptions.splice(index, 1);
+      };
+
+      scope.deleteFee = function (index) {
+        scope.specificIncomeAccountMapping.splice(index, 1);
+      };
+
+      scope.deletePenalty = function (index) {
+        scope.penaltySpecificIncomeaccounts.splice(index, 1);
+      };
+
+      scope.deletePrincipalVariation = function (index) {
+        scope.formData.principalVariationsForBorrowerCycle.splice(index, 1);
+      };
+
+      scope.deleteInterestRateVariation = function (index) {
+        scope.formData.interestRateVariationsForBorrowerCycle.splice(index, 1);
+      };
+
+      scope.deleterepaymentVariation = function (index) {
+        scope.formData.numberOfRepaymentVariationsForBorrowerCycle.splice(
+          index,
+          1
+        );
+      };
+
+      scope.isAccountingEnabled = function () {
+        if (
+          scope.formData.accountingRule == 2 ||
+          scope.formData.accountingRule == 3 ||
+          scope.formData.accountingRule == 4
+        ) {
+          return true;
+        }
+        return false;
+      };
+
+      scope.isAccrualAccountingEnabled = function () {
+        if (
+          scope.formData.accountingRule == 3 ||
+          scope.formData.accountingRule == 4
+        ) {
+          return true;
+        }
+        return false;
+      };
+
+      scope.setFlag = function () {
+        if (scope.formData.principalVariationsForBorrowerCycle) {
+          scope.pvFlag = true;
+        }
+        if (scope.formData.numberOfRepaymentVariationsForBorrowerCycle) {
+          scope.rvFlag = true;
+        }
+        if (scope.formData.interestRateVariationsForBorrowerCycle) {
+          scope.irFlag = true;
+        }
+      };
+      scope.setFlag();
+
+      scope.setAttributeValues = function () {
+        if (scope.allowAttributeConfiguration == false) {
+          scope.amortization = false;
+          scope.arrearsTolerance = false;
+          scope.graceOnArrearsAging = false;
+          scope.interestCalcPeriod = false;
+          scope.interestMethod = false;
+          scope.graceOnPrincipalAndInterest = false;
+          scope.repaymentFrequency = false;
+          scope.transactionProcessingStrategy = false;
+        }
+      };
+
+      scope.submit = function () {
+        scope.paymentChannelToFundSourceMappings = [];
+        scope.feeToIncomeAccountMappings = [];
+        scope.penaltyToIncomeAccountMappings = [];
+        scope.chargesSelected = [];
+        scope.selectedConfigurableAttributes = [];
+        var reqFirstDate = dateFilter(scope.date.first, scope.df);
+        var reqSecondDate = dateFilter(scope.date.second, scope.df);
+        var temp = "";
+        //configure fund sources for payment channels
+        for (var i in scope.configureFundOptions) {
+          temp = {
+            paymentTypeId: scope.configureFundOptions[i].paymentTypeId,
+            fundSourceAccountId:
+              scope.configureFundOptions[i].fundSourceAccountId,
+          };
+          scope.paymentChannelToFundSourceMappings.push(temp);
+        }
+
+        //map fees to specific income accounts
+        for (var i in scope.specificIncomeAccountMapping) {
+          temp = {
+            chargeId: scope.specificIncomeAccountMapping[i].chargeId,
+            incomeAccountId:
+              scope.specificIncomeAccountMapping[i].incomeAccountId,
+          };
+          scope.feeToIncomeAccountMappings.push(temp);
+        }
+
+        //map penalties to specific income accounts
+        for (var i in scope.penaltySpecificIncomeaccounts) {
+          temp = {
+            chargeId: scope.penaltySpecificIncomeaccounts[i].chargeId,
+            incomeAccountId:
+              scope.penaltySpecificIncomeaccounts[i].incomeAccountId,
+          };
+          scope.penaltyToIncomeAccountMappings.push(temp);
+        }
+
+        for (var i in scope.charges) {
+          temp = {
+            id: scope.charges[i].id,
+          };
+          scope.chargesSelected.push(temp);
+        }
+
+        if (scope.allowAttributeConfiguration == false) {
+          scope.amortization = false;
+          scope.arrearsTolerance = false;
+          scope.graceOnArrearsAging = false;
+          scope.interestCalcPeriod = false;
+          scope.interestMethod = false;
+          scope.graceOnPrincipalAndInterest = false;
+          scope.repaymentFrequency = false;
+          scope.transactionProcessingStrategy = false;
+        }
+
+        scope.selectedConfigurableAttributes = {
+          amortizationType: scope.amortization,
+          interestType: scope.interestMethod,
+          transactionProcessingStrategyId: scope.transactionProcessingStrategy,
+          transactionProcessingStrategyCode:
+            scope.transactionProcessingStrategyCode,
+          interestCalculationPeriodType: scope.interestCalcPeriod,
+          inArrearsTolerance: scope.arrearsTolerance,
+          repaymentEvery: scope.repaymentFrequency,
+          graceOnPrincipalAndInterestPayment: scope.graceOnPrincipalAndInterest,
+          graceOnArrearsAgeing: scope.graceOnArrearsAging,
+        };
+        console.log(scope.selectedConfigurableAttributes);
+
+        this.formData.paymentChannelToFundSourceMappings =
+          scope.paymentChannelToFundSourceMappings;
+        this.formData.feeToIncomeAccountMappings =
+          scope.feeToIncomeAccountMappings;
+        this.formData.penaltyToIncomeAccountMappings =
+          scope.penaltyToIncomeAccountMappings;
+        this.formData.charges = scope.chargesSelected;
+        this.formData.allowAttributeOverrides =
+          scope.selectedConfigurableAttributes;
+        this.formData.dateFormat = scope.df;
+        this.formData.locale = scope.optlang.code;
+        this.formData.startDate = reqFirstDate;
+        this.formData.closeDate = reqSecondDate;
+
+        //Interest recalculation data
+        if (this.formData.isInterestRecalculationEnabled) {
+          var restFrequencyDate = dateFilter(
+            scope.date.recalculationRestFrequencyDate,
+            scope.df
+          );
+          scope.formData.recalculationRestFrequencyDate = restFrequencyDate;
+          var compoundingFrequencyDate = dateFilter(
+            scope.date.recalculationCompoundingFrequencyDate,
+            scope.df
+          );
+          scope.formData.recalculationCompoundingFrequencyDate =
+            compoundingFrequencyDate;
+        } else {
+          delete scope.formData.interestRecalculationCompoundingMethod;
+          delete scope.formData.rescheduleStrategyMethod;
+          delete scope.formData.recalculationRestFrequencyType;
+          delete scope.formData.recalculationRestFrequencyInterval;
+        }
+
+        if (this.formData.isLinkedToFloatingInterestRates) {
+          delete scope.formData.interestRatePerPeriod;
+          delete scope.formData.minInterestRatePerPeriod;
+          delete scope.formData.maxInterestRatePerPeriod;
+          delete scope.formData.interestRateFrequencyType;
+        } else {
+          delete scope.formData.floatingRatesId;
+          delete scope.formData.interestRateDifferential;
+          delete scope.formData.isFloatingInterestRateCalculationAllowed;
+          delete scope.formData.minDifferentialLendingRate;
+          delete scope.formData.defaultDifferentialLendingRate;
+          delete scope.formData.maxDifferentialLendingRate;
+        }
+
+        //If Variable Installments is not allowed for this product, remove the corresponding formData
+        if (!this.formData.allowVariableInstallments) {
+          delete scope.formData.minimumGap;
+          delete scope.formData.maximumGap;
+        }
+
+        if (this.formData.interestCalculationPeriodType == 0) {
+          this.formData.allowPartialPeriodInterestCalcualtion = false;
+        }
+
+        if (this.formData.amortizationType != 0) {
+          this.formData.fixedPrincipalPercentagePerInstallment = null;
+        }
+
+        if (this.formData.recalculationCompoundingFrequencyType == 4) {
+          if (this.formData.recalculationCompoundingFrequencyNthDayType == -2) {
+            delete this.formData.recalculationCompoundingFrequencyNthDayType;
+            delete this.formData.recalculationCompoundingFrequencyDayOfWeekType;
+          } else {
+            delete this.formData.recalculationCompoundingFrequencyOnDayType;
+          }
+        } else if (this.formData.recalculationCompoundingFrequencyType == 3) {
+          delete this.formData.recalculationCompoundingFrequencyOnDayType;
+          delete this.formData.recalculationCompoundingFrequencyNthDayType;
+        }
+
+        if (this.formData.recalculationRestFrequencyType == 4) {
+          if (this.formData.recalculationRestFrequencyNthDayType == -2) {
+            delete this.formData.recalculationRestFrequencyNthDayType;
+            delete this.formData.recalculationRestFrequencyDayOfWeekType;
+          } else {
+            delete this.formData.recalculationRestFrequencyOnDayType;
+          }
+        } else if (this.formData.recalculationRestFrequencyType == 3) {
+          delete this.formData.recalculationRestFrequencyOnDayType;
+          delete this.formData.recalculationRestFrequencyNthDayType;
+        }
+
+        resourceFactory.loanProductResource.put(
+          { loanProductId: routeParams.id },
+          this.formData,
+          function (data) {
+            location.path("/viewloanproduct/" + data.resourceId);
+          }
+        );
+      };
+    },
+  });
+  mifosX.ng.application
+    .controller("EditLoanProductController", [
+      "$scope",
+      "ResourceFactory",
+      "$location",
+      "$routeParams",
+      "dateFilter",
+      "$translate",
+      mifosX.controllers.EditLoanProductController,
+    ])
+    .run(function ($log) {
+      $log.info("EditLoanProductController initialized");
     });
-    mifosX.ng.application.controller('EditLoanProductController', ['$scope', 'ResourceFactory', '$location', '$routeParams', 'dateFilter', '$translate', mifosX.controllers.EditLoanProductController]).run(function ($log) {
-        $log.info("EditLoanProductController initialized");
-    });
-}(mifosX.controllers || {}));
+})(mifosX.controllers || {});
 ;/**
  * Created by Jose on 25/07/2017.
  */
@@ -32050,7 +32745,9 @@
       );
 
       scope.downloadReport = function () {
-        const url = window.location.search;
+        const url =
+          window.location.search ||
+          "https://mifos-backend.slsbank.com&tenantIdentifier=default";
         const queryParams = new URLSearchParams(url);
         const tenant = queryParams.get("tenantIdentifier");
         const baseUrl = queryParams.get("baseApiUrl");

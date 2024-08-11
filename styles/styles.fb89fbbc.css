@@ -18129,8 +18129,8 @@ span.required {
 .chosen-container-single .chosen-single {
   background: #fff;
   border: 1px solid #e0e0e0;
-  border-radius: 0;
-  height: 30px;
+  border-radius: 6px;
+  height: 34px;
   box-shadow: none;
   padding: 2px 0 0 10px;
   min-width: 220px !important;
