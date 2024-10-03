@@ -101,8 +101,14 @@
                             <td class="paddedbottom20 width36">
                                 <input type="text" id="externalId" name="externalId" ng-model="formData.externalId" class="form-control" />
                             </td>
-                            <td></td>
-                            <td></td>
+                            
+                            <td class="width14">
+                                <label>{{ 'label.input.ippisnumber' | translate }}</label>
+                                <i class="fa fa-question-circle" uib-tooltip="{{'label.tooltip.ippisnumber' | translate}}"></i>
+                            </td>
+                            <td class="paddedbottom20 width36">
+                                <input type="text" id="ippisNumber" name="ippisNumber" ng-model="formData.ippisNumber" class="form-control" />
+                            </td>
                         </tr>
                     </table>
                     <div ng-hide="loanaccountinfo.calendarOptions == undefined">
@@ -282,7 +288,7 @@
                                         ng-options="interestType.id as interestType.value for interestType in loanaccountinfo.interestTypeOptions"
                                         class="form-control width170px" value="{{interestType.id}}"></select>
                                     <label class="col-sm-offset-1">{{ 'label.input.isequalamortization' | translate }}</label>
-                                    <input type="checkbox" ng-model="formData.isEqualAmortization" ng-true-value="true" ng-false-value="false">
+                                    <input ng-init="formData.isEqualAmortization = false" type="checkbox" ng-model="formData.isEqualAmortization" ng-true-value="true" ng-false-value="false">
                                 </div>
                             </td>
                         </tr>
@@ -365,17 +371,17 @@
                                 <input id="graceOnInterestCharged" type="text" ng-model="formData.graceOnInterestCharged" class="form-control" />
                             </td>
                         </tr>
-                        <tr>
+                        <tr >
                             <td ng-hide="response.uiDisplayConfigurations.loanAccount.isHiddenField.transactionProcessingStrategyId == true">
                                 <label>{{ 'label.input.repaymentstrategy' | translate }}&nbsp;
                                     <span class="required">*</span>
                                 </label>
                             </td>
                             <td class="paddedbottom20" ng-hide="response.uiDisplayConfigurations.loanAccount.isHiddenField.transactionProcessingStrategyId == true">
-                                <select id="transactionProcessingStrategyId" ng-model="formData.transactionProcessingStrategyId" ng-change="loandetails.transactionProcessingStrategyValue = formValue(loanaccountinfo.transactionProcessingStrategyOptions,formData.transactionProcessingStrategyId,'id','name')"
+                                <select style="width: 200px;" id="transactionProcessingStrategyId" ng-model="formData.transactionProcessingStrategyId" ng-change="loandetails.transactionProcessingStrategyValue = formValue(loanaccountinfo.transactionProcessingStrategyOptions,formData.transactionProcessingStrategyId,'id','name')"
                                     ng-options="transactionProcessingStrategy.id as transactionProcessingStrategy.name for transactionProcessingStrategy in loanaccountinfo.transactionProcessingStrategyOptions"
                                     value="{{transactionProcessingStrategy.id}}" ng-disabled="!loanaccountinfo.product.allowAttributeOverrides.transactionProcessingStrategyId"
-                                    class="form-control width170px"></select>
+                                    class="form-control"></select>
                             </td>
                             <td colspan=2>
                                 <lable>{{'label.input.grace' | translate }}:</lable>
@@ -756,12 +762,12 @@
 
                     <div ng-show="loanaccountinfo">
                         <span>
-                            <a ng-hide="previewRepayment" ng-click="previewRepayments()">{{'label.anchor.repaymentinfo' | translate}}
+                            <a data-ng-hide="previewRepayment" ng-click="previewRepayments()">{{'label.anchor.repaymentinfo' | translate}}
                                 <i class="fa fa-arrow-circle-right"></i>
                             </a>
                         </span>
                         <span>
-                            <a ng-show="previewRepayment" ng-click="previewRepayment=!previewRepayment">
+                            <a data-ng-show="previewRepayment" ng-click="unpreviewRepayments()">
                                 <i class="fa fa-circle-arrow-left">{{'label.anchor.backtoloaninfo' | translate}}</i>
                             </a>
                             <br>
@@ -770,7 +776,7 @@
                     </div>
 
                     <div>
-                        <table class=" width100" ng-show="previewRepayment">
+                        <table class=" width100" data-ng-show="previewRepayment">
                             <thead>
                                 <th colspan="3" scope="col"></th>
                                 <th colspan="3" scope="col">{{'label.heading.loanamountandbalance' | translate}}</th>
@@ -939,6 +945,10 @@
                         <tr>
                             <td colspan="6">{{ 'label.input.externalid' | translate }}</td>
                             <td class="">{{loandetails.externalId}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6">{{ 'label.input.ippisnumber' | translate }}</td>
+                            <td class="">{{loandetails.ippisNumber}}</td>
                         </tr>
                         <tr class="bottomborder toppadding">
                             <td colspan="7">

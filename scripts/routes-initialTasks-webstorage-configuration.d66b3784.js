@@ -428,10 +428,16 @@
       .when("/trans-master", {
         templateUrl: "views/accounting/trans-master.html",
       })
+      .when("/product-gl", {
+        templateUrl: "views/accounting/product_gl.html",
+      })
       .when("/book-contract", {
         templateUrl: "views/accounting/bookcontract.html",
       })
-      .when("/bulkimporttellerposting", {
+      .when("/contract-master/:id/:type/details", {
+        templateUrl: "views/accounting/view_contract_details.html",
+      })
+      .when("/file-upload", {
         templateUrl:
           "views/organization/bulkimport/bulkimporttellerposting.html",
       })

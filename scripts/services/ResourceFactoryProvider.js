@@ -94,6 +94,19 @@
                 getImports: { method: "GET", params: {}, isArray: true },
               }
             ),
+            // glCodeResource: defineResource(
+            //   apiVer + "/lookup-data?categoryCode=GL_CODES",
+            //   // { officeId: "@officeId" },
+            //   {
+            //     getGlCodes: { method: "GET", params: {}, isArray: true },
+            //     getGlCodesInAlphabeticalOrder: {
+            //       method: "GET",
+            //       params: { orderBy: "name", sortOrder: "ASC" },
+            //       isArray: true,
+            //     },
+            //     update: { method: "PUT" },
+            //   }
+            // ),
             clientResource: defineResource(
               apiVer + "/clients/:clientId/:anotherresource",
               {
@@ -590,6 +603,15 @@
                 update: { method: "PUT" },
               }
             ),
+            repaymentScheduleDownloadResource: defineResource(
+              apiVer + "/loans/repaymentschedule/downloads/:loanId",
+              {
+                loanId: "@loanId",
+              },
+              {
+                download: { method: "GET", params: {} },
+              }
+            ),
             glimLoan: defineResource(
               apiVer + "/loans/glimAccount/:glimId",
               { glimId: "@glimId", command: "@command" },
@@ -631,6 +653,24 @@
               {},
               {
                 get: { method: "GET", params: {} },
+                update: { method: "PUT" },
+                upd: { method: "PUT", params: {} },
+              }
+            ),
+            glCodeResource: defineResource(
+              apiVer + "/lookup-data?categoryCode=GL_CODES",
+              {},
+              {
+                getGlCodes: { method: "GET", params: {} },
+                update: { method: "PUT" },
+                upd: { method: "PUT", params: {} },
+              }
+            ),
+            saveGlCodeResource: defineResource(
+              apiVer + "/v1/glpm/save",
+              {},
+              {
+                save: { method: "POST", params: {} },
                 update: { method: "PUT" },
                 upd: { method: "PUT", params: {} },
               }
@@ -805,8 +845,22 @@
                 get: { method: "POST" },
               }
             ),
+            getGLCodesResource: defineResource(
+              apiVer + "/tellerposting/lookup-data?categoryCode=GL_CODES",
+              {},
+              {
+                get: { method: "GET" },
+              }
+            ),
+            getLookupResource: defineResource(
+              apiVer + "/tellerposting/lookup-data",
+              {},
+              {
+                get: { method: "GET" },
+              }
+            ),
             contractMasterResource: defineResource(
-              apiVer + "/thirdparty/contract-master",
+              apiVer + "/contracts/fetch",
               {},
               {
                 getAllContracts: {
@@ -815,10 +869,31 @@
               }
             ),
             bookContractResource: defineResource(
-              apiVer + "/thirdparty/contract-master/book",
+              apiVer + "/contracts/contract-master/book",
               {},
               {
                 create: { method: "POST" },
+              }
+            ),
+            undoContractResource: defineResource(
+              apiVer + "/contracts/undoContractBooking",
+              {},
+              {
+                undo: { method: "POST" },
+              }
+            ),
+            computeContractResource: defineResource(
+              apiVer + "/contracts/contract-master/compute",
+              {},
+              {
+                compute: { method: "POST" },
+              }
+            ),
+            closeContractResource: defineResource(
+              apiVer + "/contracts/close",
+              {},
+              {
+                close: { method: "POST" },
               }
             ),
             loanMasterResource: defineResource(
@@ -853,6 +928,15 @@
               {},
               {
                 fetch: {
+                  method: "POST",
+                },
+              }
+            ),
+            reverseTransResource: defineResource(
+              apiVer + "/tellerposting/reverseTran",
+              {},
+              {
+                reverse: {
                   method: "POST",
                 },
               }
@@ -1515,6 +1599,20 @@
                     tellerId: "@tellerId",
                     cashierId: "@cashierId",
                     command: "settle",
+                  },
+                },
+              }
+            ),
+            tellerCashierTxnsExpenseResource: defineResource(
+              apiVer + "/tellers/:tellerId/cashiers/:cashierId/expense",
+              { tellerId: "@tellerId", cashierId: "@cashierId" },
+              {
+                add: {
+                  method: "POST",
+                  params: {
+                    tellerId: "@tellerId",
+                    cashierId: "@cashierId",
+                    command: "expense",
                   },
                 },
               }

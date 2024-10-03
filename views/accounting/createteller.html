@@ -8,7 +8,7 @@
         >{{'label.anchor.tellerPosting' | translate}}</a
       >
     </li>
-    <li class="active">{{'label.anchor.createteller' | translate}}</li>
+    <li class="active">{{'Teller Transaction Posting' | translate}}</li>
   </ul>
   <form
     name="createglaccountingform"
@@ -19,9 +19,34 @@
   >
     <api-validate></api-validate>
     <fieldset>
-      <legend>{{'label.heading.createteller' | translate}}</legend>
+      <legend>{{'Teller Transaction Posting' | translate}}</legend>
 
       <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'label.input.tranType' | translate}}<span class="required"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <select
+            chosen="tranTypes"
+            id="tranType"
+            ng-model="formData.tranType"
+            class="form-control"
+            ng-options="tranType.code as tranType.name for tranType in tranTypes"
+            value="{{tranType.code}}"
+          >
+            <option class="displaynone" value="">
+              {{'label.input.tranType' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createglaccountingform"
+            valattribute="tranType"
+          />
+        </div>
         <label class="control-label col-sm-2"
           >{{'label.input.tellerId' | translate}}<span class="required"
             >*</span
@@ -43,6 +68,125 @@
           <form-validate
             valattributeform="createglaccountingform"
             valattribute="tellerId"
+          />
+        </div>
+      </div>
+      <div class="form-group" hidden>
+        <label class="control-label col-sm-2"
+          >{{'label.input.beneficiaryAccount' | translate}}<span
+            class="required"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="beneficiaryAccount"
+            name="beneficiaryAccount"
+            ng-autofocus="true"
+            ng-model="formData.beneficiaryAccount"
+            class="form-control"
+            ng-blur="fetchAccount()"
+            late-Validate
+          />
+        </div>
+
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createglaccountingform"
+            valattribute="beneficiaryAccount"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'label.input.beneficiaryName' | translate}}<span class="required"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="beneficiaryName"
+            type="text"
+            name="beneficiaryName"
+            ng-model="formData.beneficiaryName"
+            class="form-control"
+            late-Validate
+            disabled
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createglaccountingform"
+            valattribute="beneficiaryName"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'label.input.account' | translate}}<span class="required"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="sourceAccount"
+            name="sourceAccount"
+            ng-autofocus="true"
+            ng-model="formData.sourceAccount"
+            class="form-control"
+            ng-blur="fetchAccount()"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createglaccountingform"
+            valattribute="sourceAccount"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'Account Name' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="accountName"
+            type="text"
+            name="accountName"
+            ng-model="formData.accountName"
+            class="form-control"
+            late-Validate
+            disabled
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createglaccountingform"
+            valattribute="beneficiaryName"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'label.input.amount' | translate}}<span class="required"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <input
+            id="amount"
+            type="text"
+            name="amount"
+            ng-model="formData.amount"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createglaccountingform"
+            valattribute="amount"
           />
         </div>
         <label class="control-label col-sm-2"
@@ -68,106 +212,8 @@
           />
         </div>
       </div>
-      <div class="form-group">
-        <label class="control-label col-sm-2"
-          >{{'label.input.beneficiaryAccount' | translate}}<span
-            class="required"
-            >*</span
-          ></label
-        >
-        <div class="col-sm-3">
-          <input
-            type="text"
-            id="beneficiaryAccount"
-            name="beneficiaryAccount"
-            ng-autofocus="true"
-            ng-model="formData.beneficiaryAccount"
-            class="form-control"
-            ng-blur="fetchAccount()"
-            required
-            late-Validate
-          />
-        </div>
 
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="createglaccountingform"
-            valattribute="beneficiaryAccount"
-          />
-        </div>
-        <label class="control-label col-sm-2"
-          >{{'label.input.beneficiaryName' | translate}}<span class="required"
-            >*</span
-          ></label
-        >
-        <div class="col-sm-3">
-          <input
-            id="beneficiaryName"
-            type="text"
-            name="beneficiaryName"
-            ng-model="formData.beneficiaryName"
-            class="form-control"
-            required
-            late-Validate
-            disabled
-          />
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="createglaccountingform"
-            valattribute="beneficiaryName"
-          />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="control-label col-sm-2"
-          >{{'label.input.sourceAccount' | translate}}<span class="required"
-            >*</span
-          ></label
-        >
-        <div class="col-sm-3">
-          <input
-            type="text"
-            id="sourceAccount"
-            name="sourceAccount"
-            ng-autofocus="true"
-            ng-model="formData.sourceAccount"
-            class="form-control"
-            required
-            late-Validate
-          />
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="createglaccountingform"
-            valattribute="sourceAccount"
-          />
-        </div>
-        <label class="control-label col-sm-2"
-          >{{'label.input.amount' | translate}}<span class="required"
-            >*</span
-          ></label
-        >
-        <div class="col-sm-3">
-          <input
-            id="amount"
-            type="text"
-            name="amount"
-            ng-model="formData.amount"
-            class="form-control"
-            required
-            late-Validate
-          />
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="createglaccountingform"
-            valattribute="amount"
-          />
-        </div>
-      </div>
-
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label class="control-label col-sm-2"
           >{{'label.input.tranCode' | translate}}<span class="required"
             >*</span
@@ -213,38 +259,28 @@
             valattribute="vaultNo"
           />
         </div>
-      </div>
+      </div> -->
       <div class="form-group">
         <label class="control-label col-sm-2"
-          >{{'label.input.tranType' | translate}}<span class="required"
-            >*</span
-          ></label
-        >
+          >Transaction Date<span class="required"></span
+        ></label>
         <div class="col-sm-3">
-          <select
-            chosen="tranTypes"
-            id="tranType"
-            ng-model="formData.tranType"
+          <input
+            id="transactionDate"
+            type="text"
+            name="transactionDate"
+            datepicker-pop="dd MMMM yyyy"
+            ng-model="formData.transactionDate"
+            is-open="opened1"
+            min="minDate"
+            max="restrictDate"
             class="form-control"
-            ng-options="tranType.code as tranType.name for tranType in tranTypes"
-            value="{{tranType.code}}"
-          >
-            <option class="displaynone" value="">
-              {{'label.input.tranType' | translate}}
-            </option>
-          </select>
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="createglaccountingform"
-            valattribute="tranType"
           />
         </div>
-
         <div class="col-sm-1">
           <form-validate
             valattributeform="createglaccountingform"
-            valattribute="vaultNo"
+            valattribute="transactionDate"
           />
         </div>
       </div>
@@ -272,7 +308,7 @@
           id="save"
           type="submit"
           class="btn btn-primary"
-          has-permission="CREATE_GLACCOUNT"
+          has-permission="CREATE_TELLER"
         >
           {{'label.button.save' | translate}}
         </button>

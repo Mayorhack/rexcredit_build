@@ -420,6 +420,281 @@
               </div>
             </div>
           </div>
+
+
+
+          <div class="form-group" data-ng-show="showChargeData" >
+            <div class="form-group">
+              <label class="control-label col-sm-2">
+                {{ 'label.heading.chargedata' | translate }}
+                &nbsp;
+              </label>
+
+              <div class="col-sm-3">
+                <a class="btn btn-primary" ng-click="addChargeData()"
+                ><i
+                  class="fa fa-plus"
+                  title="{{'label.button.addchargedata' | translate}}"
+                ></i
+              ></a>
+              </div>
+            </div>
+
+            <div ng-repeat="charge in chargeDataArray">
+              <div class="form-group">
+                <!-- <div class="control-label col-sm-2">
+                  <label
+                    >{{ 'label.input.chargeid' | translate }}<span
+                      class="required"
+                      >*</span
+                    ></label
+                  >
+                </div>
+                <div class="col-sm-3">
+                  <select
+                    chosen="relationshipIdOptions"
+                    id="relationshipIdOption"
+                    ng-model="chargeDataArray[$index].relationshipId"
+                    class="form-control"
+                    ng-options="relationshipIdOption.id as relationshipIdOption.name for relationshipIdOption in relationshipIdOptions track by relationshipIdOption.id"
+                    value="formData.relationshipId"
+                  ></select>
+                </div>
+                <div class="col-sm-2">
+                  <form-validate
+                    valattributeform="createclientform"
+                    valattribute="addressType"
+                  />
+                </div>
+
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="firstName"
+                  >{{'label.input.firstname' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    ng-model="chargeDataArray[$index].firstName"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="middleName"
+                  >{{'label.input.middlename' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    type="text"
+                    id="middleName"
+                    name="middleName"
+                    ng-model="chargeDataArray[$index].middleName"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="lastName"
+                  >{{'label.input.lastname' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    ng-model="chargeDataArray[$index].lastName"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="qualification"
+                  >{{ 'label.input.qualification' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    type="text"
+                    id="qualification"
+                    name="qualification"
+                    ng-model="chargeDataArray[$index].qualification"
+                    class="form-control"
+                  />
+                </div>
+              </div> -->
+
+                <api-validate></api-validate>
+                    <div class="form-group" >
+                        <label class="control-label col-sm-2" for="chargeId">{{ 'label.input.charge' | translate }}</label>
+                        <!-- <span
+                        class="required">*</span> -->
+                        <div class="col-sm-3">
+                            <!-- <select id="chargeId" ng-model="formData.chargeId" class="form-control"
+                                    ng-options="charge.id as (charge.name+' '+'('+charge.currency.name+')') for charge in charges"
+                                    value="{{charge.id}}" ng-change="selectCharge(formData.chargeId)">
+                                    <option value="">{{'label.selectcharge' | translate}}</option>
+                        </select> -->
+                            <select
+                            id="chargeId" class="form-control" value="{{charge.id}}"
+                            ng-model="charge.chargeId" ng-change="selectCharge(charge.chargeId, $index)"
+                            ng-options="charge.id as (charge.name+' '+'('+charge.currency.name+')') for charge in chargeData">
+                                <option value="">{{'label.selectcharge' | translate}}</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                          <form-validate
+                            valattributeform="createclientform"
+                            valattribute="chargeId"
+                          />
+                        </div>
+                        <a
+                        class="btn btn-primary"
+                        ng-click="removeChargeData($index)"
+                        uib-tooltip="{{'label.remove.row' | translate}}"
+                        ><i class="fa fa-times"></i
+                      ></a>
+                    </div>
+
+
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="amount"
+                  >{{ 'label.input.amount' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    type="number"
+                    id="amount"
+                    name="amount"
+                    ng-model="chargeDataArray[$index].amount"
+                    class="form-control"
+                  />
+                </div>
+                <div class="col-sm-2">
+                  <form-validate
+                    valattributeform="createclientform"
+                    valattribute="amount"
+                  />
+                </div>
+              </div>
+
+              <!-- <div class="form-group">
+                <label class="control-label col-sm-2" for="age"
+                  >{{ 'label.input.age' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    type="text"
+                    id="age"
+                    name="age"
+                    ng-model="chargeDataArray[$index].age"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="isDependent"
+                  >{{ 'label.input.isDependent' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    type="checkbox"
+                    class="input-mini-small"
+                    id="isDependent"
+                    name="isDependent"
+                    ng-model="chargeDataArray[$index].isDependent"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="control-label col-sm-2">
+                  <label>{{ 'label.input.gender' | translate }}</label>
+                </div>
+                <div class="col-sm-3">
+                  <select
+                    chosen="genderIdOptions"
+                    id="genderIdOption"
+                    ng-model="chargeDataArray[$index].genderId"
+                    class="form-control"
+                    ng-options="genderIdOption.id as genderIdOption.name for genderIdOption in genderIdOptions track by genderIdOption.id"
+                    value="formData.genderId"
+                  ></select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="control-label col-sm-2">
+                  <label>{{ 'label.input.profession' | translate }}</label>
+                </div>
+                <div class="col-sm-3">
+                  <select
+                    chosen="professionIdOptions"
+                    id="professionIdOption"
+                    ng-model="chargeDataArray[$index].professionId"
+                    class="form-control"
+                    ng-options="professionIdOption.id as professionIdOption.name for professionIdOption in professionIdOptions track by professionIdOption.id"
+                    value="formData.professionId"
+                  ></select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="control-label col-sm-2">
+                  <label>{{ 'label.input.maritalstatus' | translate }}</label>
+                </div>
+                <div class="col-sm-3">
+                  <select
+                    chosen="maritalStatusIdOptions"
+                    id="maritalStatusId"
+                    ng-model="chargeDataArray[$index].maritalStatusId"
+                    class="form-control"
+                    ng-options="maritalStatusIdOption.id as maritalStatusIdOption.name for maritalStatusIdOption in maritalStatusIdOptions track by maritalStatusIdOption.id"
+                    value="formData.maritalStatusId"
+                  ></select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label col-sm-2" for="dateofbirth"
+                  >{{ 'label.input.dateofbirth' | translate }}</label
+                >
+
+                <div class="col-sm-3">
+                  <input
+                    id="dateofbirth"
+                    type="text"
+                    name="dateofbirth"
+                    datepicker-pop="dd MMMM yyyy"
+                    ng-model="chargeDataArray[$index].dateOfBirth"
+                    is-open="opened1"
+                    min="minDate "
+                    max="restrictDate"
+                    class="form-control"
+                  />
+                </div>
+              </div> -->
+            </div>
+          </div>
+
+
+
+
           <div class="form-group" ng-show="showNoteField">
             <label class="control-label col-sm-2" for="note"
               >{{ 'label.input.note' | translate}}</label

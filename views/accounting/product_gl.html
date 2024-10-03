@@ -1,0 +1,183 @@
+<div class="content-container">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/accounting">{{'label.anchor.accounting' | translate}}</a>
+    </li>
+    <li class="active">{{'label.anchor.productGL' | translate}}</li>
+  </ul>
+  <div class="card">
+    <div class="content">
+      <div class="toolbar">
+        <h4>{{ 'label.heading.productGL' | translate }}</h4>
+      </div>
+      <br />
+      <form
+        name="productGLform"
+        novalidate=""
+        class="form-horizontal"
+        ng-controller="ProductGLController"
+        rc-submit="submit()"
+      >
+        <api-validate></api-validate>
+        <fieldset>
+          <div class="form-group">
+            <label class="control-label col-sm-2"
+              >{{ 'label.input.portfoliotype' | translate }}&nbsp;<span
+                class="required"
+                >*</span
+              ></label
+            >
+            <div class="col-sm-3">
+              <select
+                chosen="portfolioTypeOptions"
+                id="portfoliotype"
+                name="portfolioType"
+                ng-model="formData.portfolioType"
+                class="form-control"
+                ng-options="portfolio.type as portfolioType.name for portfolioType in portfolioTypeOptions"
+                value="{{portfolio.type}}"
+                required
+              ></select>
+            </div>
+
+            <label class="control-label col-sm-2"
+              >{{ 'label.input.productlist' | translate }}&nbsp;<span
+                class="required"
+                >*</span
+              ></label
+            >
+            <div class="col-sm-3">
+              <select
+                id="productlist"
+                chosen="productListOptions"
+                name="productList"
+                ng-model="formData.productList"
+                class="form-control"
+                ng-options="product.list as productList.name for productList in productListOptions"
+                value="{{product.list}}"
+                required
+              ></select>
+            </div>
+            <div class="col-sm-2">
+              <form-validate
+                valattributeform="productGLform"
+                valattribute="accounttypetag"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label col-sm-2"
+              >{{ 'label.input.glcode' | translate }}&nbsp;<span
+                class="required"
+                >*</span
+              ></label
+            >
+            <div class="col-sm-3">
+              <select
+                chosen="glCodeOptions"
+                id="glCode"
+                name="glCode"
+                ng-model="formData.glCode"
+                class="form-control"
+                ng-options="gl.code as gl.name for gl in glCodeOptions"
+                value="{{gl.code}}"
+                required
+              ></select>
+            </div>
+
+            <label class="control-label col-sm-2"
+              >{{ 'label.input.accounttypetag' | translate }}&nbsp;<span
+                class="required"
+                >*</span
+              ></label
+            >
+            <div class="col-sm-3">
+              <select
+                chosen="accountTypeOptions"
+                id="accounttypetag"
+                name="accountTypeTag"
+                ng-model="formData.accounttypetag"
+                class="form-control"
+                ng-options="account.type as accounttype.name for accounttype in accountTypeOptions"
+                value="{{account.type}}"
+                required
+              ></select>
+            </div>
+            <div class="col-sm-2">
+              <form-validate
+                valattributeform="productGLform"
+                valattribute="accounttypetag"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label col-sm-2"
+              >{{ 'label.input.paymenttype' | translate }}&nbsp;<span
+                class="required"
+                >*</span
+              ></label
+            >
+            <div class="col-sm-3">
+              <select
+                chosen="paymentTypeOptions"
+                id="paymenttype"
+                name="paymentType"
+                ng-model="formData.paymentType"
+                class="form-control"
+                ng-options="payment.type as payment.name for payment in paymentTypeOptions"
+                value="{{payment.type}}"
+                required
+              ></select>
+            </div>
+
+            <label class="control-label col-sm-2"
+              >{{ 'label.input.charges' | translate }}&nbsp;<span
+                class="required"
+                >*</span
+              ></label
+            >
+            <div class="col-sm-3">
+              <select
+                chosen="chargesOptions"
+                id="charges"
+                name="charges"
+                ng-model="formData.charges"
+                class="form-control"
+                ng-options="charges.type as charges.name for charges in chargesOptions"
+                value="{{charges.type}}"
+                required
+              ></select>
+            </div>
+            <div class="col-sm-2">
+              <form-validate
+                valattributeform="productGLform"
+                valattribute="accounttypetag"
+              />
+            </div>
+          </div>
+          <!-- <div class="form-group">
+    			            <label class="control-label col-sm-2">{{ 'label.input.comments' | translate }}</label>
+
+    			            <div class="col-sm-8">
+    			                <textarea rows="8" ng-model="formData.comments" class="form-control"></textarea>
+    			            </div>
+    			        </div> -->
+          <div class="col-md-offset-5">
+            <a id="cancel" href="#/accounting" class="btn btn-default"
+              >{{ 'label.button.cancel' | translate }}</a
+            >
+            <button
+              id="save"
+              type="submit"
+              ng-click="submit()"
+              class="btn btn-primary"
+              has-permission="CREATE_GLACCOUNT"
+            >
+              {{ 'label.button.save' | translate }}
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>

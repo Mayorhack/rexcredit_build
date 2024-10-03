@@ -8,6 +8,14 @@
     </li>
     <li class="active">{{'Book Contract' | translate}}</li>
   </ul>
+  <script type="text/ng-template" id="success.html">
+    <div class="modal-header silver" style="text-align:center; border:none" >
+        <h3 class="bolder">Operation Successful</h3>
+    </div>
+    <div class="modal-footer silver" style="text-align:center; border:none">
+        <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+    </div>
+  </script>
   <form
     name="bookcontractform"
     novalidate=""
@@ -19,6 +27,32 @@
     <fieldset>
       <legend>{{'Book Contract' | translate}}</legend>
       <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Contract Type' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <select
+            chosen="contractTypes"
+            required
+            id="contractType"
+            ng-model="formData.contractType"
+            class="form-control"
+            ng-options="contractType.code as contractType.name for contractType in contractTypes"
+            value="{{contractType.code}}"
+            data-ng-change="selectContract()"
+          >
+            <option class="displaynone" value="">
+              {{'Contract Type' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tranType"
+          />
+        </div>
+
         <label class="control-label col-sm-2"
           >{{'Contract Name' | translate}}<span class="required">*</span></label
         >
@@ -40,6 +74,81 @@
             valattribute="tellerId"
           />
         </div>
+      </div>
+      <div class="form-group" data-ng-show="showGL">
+        <label class="control-label col-sm-2"
+          >{{'Debit GL' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <select
+            chosen="glCodes"
+            id="debitGl"
+            ng-model="formData.debitGl"
+            class="form-control"
+            ng-options="debitGl.code as debitGl.name for debitGl in glCodes"
+            value="{{debitGl.code}}"
+          >
+            <option class="displaynone" value="">
+              {{'Debit GL' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tranType"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'Credit GL' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <select
+            chosen="glCodes"
+            id="creditGl"
+            ng-model="formData.creditGl"
+            class="form-control"
+            ng-options="creditGl.code as creditGl.name for creditGl in glCodes"
+            value="{{creditGl.code}}"
+          >
+            <option class="displaynone" value="">
+              {{'Credit GL' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tranType"
+          />
+        </div>
+      </div>
+      <div class="form-group" data-ng-show="showGL">
+        <label class="control-label col-sm-2"
+          >{{'Tax GL' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <select
+            chosen="glCodes"
+            id="debitGl"
+            ng-model="formData.taxGl"
+            class="form-control"
+            ng-options="taxGl.code as taxGl.name for taxGl in glCodes"
+            value="{{taxGl.code}}"
+          >
+            <option class="displaynone" value="">
+              {{'Tax GL' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="tranType"
+          />
+        </div>
+      </div>
+      <div class="form-group">
         <label class="control-label col-sm-2"
           >{{'Contract Desc' | translate}}<span class="required">*</span></label
         >
@@ -60,31 +169,6 @@
             valattribute="contractDescription"
           />
         </div>
-      </div>
-      <div class="form-group">
-        <label class="control-label col-sm-2"
-          >{{'Contract Type' | translate}}<span class="required">*</span></label
-        >
-        <div class="col-sm-3">
-          <select
-            chosen="contractTypes"
-            id="contractType"
-            ng-model="formData.contractType"
-            class="form-control"
-            ng-options="contractType.code as contractType.name for contractType in contractTypes"
-            value="{{contractType.code}}"
-          >
-            <option class="displaynone" value="">
-              {{'Contract Type' | translate}}
-            </option>
-          </select>
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="bookcontractform"
-            valattribute="tranType"
-          />
-        </div>
 
         <label class="control-label col-sm-2"
           >{{'Start Date' | translate}}<span class="required">*</span></label
@@ -96,6 +180,7 @@
             type="text"
             datepicker-pop="dd MMMM yyyy"
             ng-model="formData.startDate"
+            required
             is-open="opened"
             min="'2000-01-01'"
             max="restrictDate"
@@ -106,54 +191,6 @@
           <form-validate
             valattributeform="bookcontractform"
             valattribute="tranType"
-          />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="control-label col-sm-2"
-          >{{'Maturity Date' | translate}}<span class="required">*</span></label
-        >
-        <div class="col-sm-3">
-          <input
-            class="date-disable form-control"
-            id="endDate"
-            type="text"
-            datepicker-pop="dd MMMM yyyy"
-            ng-model="formData.maturityDate"
-            is-open="opened"
-            min="'2000-01-01'"
-            max="restrictDate"
-            placeholder="{{'Maturity Date' | translate}}"
-          />
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="bookcontractform"
-            valattribute="endDate"
-          />
-        </div>
-
-        <label class="control-label col-sm-2"
-          >{{'label.input.sourceAccount' | translate}}<span class="required"
-            >*</span
-          ></label
-        >
-        <div class="col-sm-3">
-          <input
-            type="text"
-            id="sourceAccount"
-            name="sourceAccount"
-            ng-autofocus="true"
-            ng-model="formData.sourceAccount"
-            class="form-control"
-            required
-            late-Validate
-          />
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="bookcontractform"
-            valattribute="sourceAccount"
           />
         </div>
       </div>
@@ -182,28 +219,6 @@
           />
         </div>
         <label class="control-label col-sm-2"
-          >{{'Tenor' | translate}}<span class="required">*</span></label
-        >
-        <div class="col-sm-3">
-          <input
-            id="tenor"
-            type="text"
-            name="tenor"
-            ng-model="formData.tenor"
-            class="form-control"
-            required
-            late-Validate
-          />
-        </div>
-        <div class="col-sm-1">
-          <form-validate
-            valattributeform="bookcontractform"
-            valattribute="tenor"
-          />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="control-label col-sm-2"
           >{{'Rate' | translate}}<span class="required">*</span></label
         >
         <div class="col-sm-3">
@@ -223,15 +238,18 @@
             valattribute="rate"
           />
         </div>
+      </div>
+      <div class="form-group">
         <label class="control-label col-sm-2"
-          >{{'OTP' | translate}}<span class="required">*</span></label
+          >{{'Tenor' | translate}}<span class="required">*</span></label
         >
         <div class="col-sm-3">
           <input
-            id="rate"
+            id="tenor"
             type="text"
-            name="rate"
-            ng-model="formData.otp"
+            name="tenor"
+            data-ng-blur="calculateDate()"
+            ng-model="formData.tenor"
             class="form-control"
             required
             late-Validate
@@ -240,7 +258,259 @@
         <div class="col-sm-1">
           <form-validate
             valattributeform="bookcontractform"
-            valattribute="otp"
+            valattribute="tenor"
+          />
+        </div>
+
+        <label class="control-label col-sm-2"
+          >{{'label.input.sourceAccount' | translate}}<span
+            class="required"
+            data-ng-show="accountRequired"
+            >*</span
+          ></label
+        >
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="sourceAccount"
+            name="sourceAccount"
+            ng-autofocus="true"
+            data-ng-blur="getAccountName()"
+            ng-model="formData.sourceAccount"
+            class="form-control"
+            ng-required="accountRequired"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="sourceAccount"
+          />
+        </div>
+      </div>
+      <div class="form-group" data-ng-show="formData.accountName">
+        <label class="control-label col-sm-2"
+          >{{'Account Name' | translate}}</label
+        >
+        <div class="col-sm-9">
+          <input
+            type="text"
+            id="sourceAccountName"
+            name="sourceAccount"
+            ng-autofocus="true"
+            ng-model="formData.accountName"
+            class="form-control"
+            disabled
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="accountName"
+          />
+        </div>
+      </div>
+      <div
+        class="form-group"
+        data-ng-show="formData.contractType==='FIXED_DEPOSIT'"
+      >
+        <label class="control-label col-sm-2"
+          >{{'Rollover Method' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <select
+            chosen="rolloverMethods"
+            id="rolloverMethod"
+            ng-model="formData.rolloverMethod"
+            class="form-control"
+            ng-options="rolloverMethod.code as rolloverMethod.name for rolloverMethod in rolloverMethods"
+            value="{{rolloverMethod.code}}"
+          >
+            <option class="displaynone" value="">
+              {{'Rollover Method' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="totalInterest"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-6">
+          <div class="col-sm-3"></div>
+          <div class="col-sm-6">
+            <button
+              class="btn btn-default col-sm-6 btn-group"
+              data-ng-click="calculateDate()"
+              type="button"
+            >
+              Compute
+            </button>
+          </div>
+          <div class="col-sm-3">
+            <div class="checkbox form-group">
+              <label for="applyTax">
+                <input
+                  type="checkbox"
+                  id="postTax"
+                  name="applyTax"
+                  ng-model="formData.applyTax"
+                  ng-checked="formData.applyTax"
+                />
+                {{'Apply Tax' | translate }}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <label class="control-label col-sm-2"
+          >{{'Maturity Date' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            class="date-disable form-control"
+            id="endDate"
+            type="text"
+            disabled
+            ng-model="formData.maturityDate"
+            placeholder="{{'Maturity Date' | translate}}"
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="endDate"
+          />
+        </div>
+      </div>
+      <div
+        class="form-group"
+        data-ng-show="formData.contractType==='FIXED_DEPOSIT'||formData.contractType==='PLACEMENTS'"
+      >
+        <label class="control-label col-sm-2"
+          >{{'Total Interest' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <input
+            id="totalInterest"
+            type="text"
+            name="totalInterest"
+            ng-model="formData.totalInterest"
+            class="form-control"
+            disabled
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="totalInterest"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'Daily Interest Accrued' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <input
+            class="date-disable form-control"
+            id="dailyAccruedInterest"
+            type="text"
+            disabled
+            ng-model="formData.dailyAccruedInterest"
+            placeholder="{{'Interest Accrued' | translate}}"
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="endDate"
+          />
+        </div>
+      </div>
+      <div class="form-group" data-ng-show="formData.contractType==='TBILL'">
+        <label class="control-label col-sm-2">{{'Yield' | translate}}</label>
+        <div class="col-sm-3">
+          <input
+            id="totalInterest"
+            type="text"
+            name="yield"
+            ng-model="formData.yield"
+            class="form-control"
+            disabled
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="totalInterest"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'Yield Amount' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <input
+            class="date-disable form-control"
+            id="yieldAmount"
+            type="text"
+            disabled
+            ng-model="formData.yieldAmount"
+            placeholder="{{'Yield Amount' | translate}}"
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="endDate"
+          />
+        </div>
+      </div>
+      <div class="form-group" data-ng-show="formData.contractType==='TBILL'">
+        <label class="control-label col-sm-2"
+          >{{'Discounted Amount' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <input
+            id="discountedValue"
+            type="text"
+            name="discountedValue"
+            ng-model="formData.discountedValue"
+            class="form-control"
+            disabled
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="discountedAmount"
+          />
+        </div>
+        <label class="control-label col-sm-2"
+          >{{'Daily Accrued Interest' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <input
+            id="dailyAccruedInterest"
+            type="text"
+            name="dailyAccruedInterest"
+            ng-model="formData.dailyAccruedInterest"
+            class="form-control"
+            disabled
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="dailyAccruedInterest"
           />
         </div>
       </div>

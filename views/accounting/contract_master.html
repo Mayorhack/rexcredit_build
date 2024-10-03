@@ -73,16 +73,26 @@
               </option>
             </select>
           </div>
-          <button
-            class="btn btn-block btn-primary"
-            type="submit"
-            data-ng-click="onFilter()"
-            id="contract-filter-button"
-            style="margin-left: 20px"
-          >
-            Filter
-          </button>
+          <div class="">
+            <input
+              class="date-disable form-control"
+              id="refNo"
+              style="margin-left: 18px"
+              type="text"
+              ng-model="formData.refNo"
+              placeholder="{{'Ref No' | translate}}"
+            />
+          </div>
         </div>
+        <button
+          class="btn btn-block btn-primary"
+          type="submit"
+          data-ng-click="onFilter()"
+          id="contract-filter-button"
+          style="max-width: 280px; margin-top: 20px"
+        >
+          Search
+        </button>
 
         <!-- <div class="col-sm-3 paddedbottom10">
           <label for="startDate">Start Date</label>
@@ -123,18 +133,66 @@
               total-items="totalContracts"
               pagination-id="contracts"
             >
-              <td class="pointer">{{coadata.referenceNo}}</td>
-              <td class="pointer">{{coadata.contractType}}</td>
-              <td class="pointer">{{coadata.startDate}}</td>
-              <td class="pointer">{{coadata.maturityDate}}</td>
-              <td class="pointer">{{coadata.amount.toLocaleString()}}</td>
-              <td class="pointer">{{coadata.rate}}</td>
-              <td class="pointer">{{coadata.tenor}}</td>
-              <td class="pointer">
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.referenceNo}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.contractType}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.startDate}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.maturityDate}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.amount.toLocaleString()}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.rate}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.tenor}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
                 {{coadata.totalInterest.toLocaleString()}}
               </td>
-              <td class="pointer">{{coadata.totalAccrued.toLocaleString()}}</td>
-              <td class="pointer">{{coadata.status}}</td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.totalAccrued.toLocaleString()}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(coadata.referenceNo,coadata.contractType)"
+              >
+                {{coadata.status}}
+              </td>
             </tr>
           </tbody>
           <tr>

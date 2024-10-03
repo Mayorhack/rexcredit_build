@@ -1,4 +1,35 @@
 <div class="content-container" ng-controller="ViewSavingDetailsController">
+    <script type="text/ng-template" id="otp.html">
+        <div class="modal-header silver">
+            <h3 class="bolder">{{'Enter Comment' | translate}}</h3>
+        </div>
+    
+        <div class="modal-body form-horizontal">
+            <api-validate></api-validate>
+            <br>
+            <div class="form-group">
+              <label class="control-label col-sm-4" for="comment">{{ 'label.input.comment' | translate }}</label>
+    
+              <div class="col-sm-5">
+                  <textarea row="3" id="comment" name="comment" ng-model="reverseFormData.comment" class="form-control"></textarea>
+              </div>
+          </div>
+    
+        </div>
+    
+        <div class="modal-footer silver">
+            <button class="btn btn-default" ng-click="cancel()">{{'label.button.cancel' | translate}}</button>
+            <button class="btn btn-primary" ng-click="save()">{{'label.button.save' | translate}}</button>
+        </div>
+      </script>
+      <script type="text/ng-template" id="success.html">
+        <div class="modal-header silver" style="text-align:center; border:none" >
+            <h3 class="bolder">Operation Successful</h3>
+        </div>
+        <div class="modal-footer silver" style="text-align:center; border:none">
+            <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+        </div>
+      </script>
     <div>
         <ul class="breadcrumb">
             <li ng-show="groupLevel == 1"><a href="#/viewcenter/{{savingaccountdetails.groupId}}">{{savingaccountdetails.groupName}}</a>
@@ -478,6 +509,9 @@
                                 <th class="pointer" ng-click="changeTransactionSort('transactionType.value')">
                                     {{'label.heading.transactiontype' | translate}}
                                 </th>
+                                <th class="pointer" ng-click="changeTransactionSort('runningBalance')">
+                                    {{'Narration' | translate}}
+                                </th>
                                 <th class="pointer" ng-click="changeTransactionSort('amount')">{{'label.heading.debit' |
                                     translate}}
                                 </th>
@@ -487,8 +521,12 @@
                                 <th class="pointer" ng-click="changeTransactionSort('runningBalance')">
                                     {{'label.heading.balance' | translate}}
                                 </th>
+                             
                                 <th class="pointer" ng-click="changeTransactionSort('runningBalance')">
                                     {{'label.heading.viewreceipts' | translate}}
+                                </th>
+                                <th class="pointer" ng-click="changeTransactionSort('runningBalance')">
+                                    {{'Action' | translate}}
                                 </th>
                             </tr>
                             </thead>
@@ -509,6 +547,10 @@
                                     {{transaction.transactionType.value}}<span ng-if=" transaction.isReversal">(R)</span>
                                 </td>
                                 <td class="pointer"
+                                data-ng-click="routeTo(transaction.accountId,transaction.id,transaction.transfer,transaction.transfer.id)">
+                                {{transaction.transactionNarration}}
+                            </td>
+                                <td class="pointer"
                                     data-ng-click="routeTo(transaction.accountId,transaction.id,transaction.transfer,transaction.transfer.id)">
                                     <div ng-show="(isDebit(transaction.transactionType)&&!transaction.isReversal)||
                                     (!isDebit(transaction.transactionType)&&transaction.isReversal)">
@@ -526,11 +568,21 @@
                                     data-ng-click="routeTo(transaction.accountId,transaction.id,transaction.transfer,transaction.transfer.id)">
                                     {{transaction.runningBalance| number}}
                                 </td>
+                              
                                 <td><span ng-if=" transaction.reversed!=true"
                                        ng-click="viewSavingsTransactionReceipts(transaction.id)">
                                     <i class="fa fa-file-text fa fa-large"></i>
                                 </span>
                                 </td>
+                                <td>
+                             <span
+                             ><a
+                               uib-tooltip="Reverse"
+                               ng-click="open(transaction.id)"
+                               class="btn btn-xs  ng-binding ng-scope"
+                               >Reverse</a
+                           ></span>
+                             </td>
                             </tr>
                             </tbody>
                         </table>

@@ -1,0 +1,271 @@
+<div class="content-container" ng-controller="ViewContractDetailsController">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/contract-master">{{'Contract Master' | translate}}</a>
+    </li>
+    <li class="active">{{ 'View Contract master Details' | translate}}</li>
+  </ul>
+  <script type="text/ng-template" id="undotransaction.html">
+    <div class="modal-header silver">
+        <h3 class="bolder">Undo Contract</h3>
+    </div>
+    <div class="modal-body ">
+        <api-validate></api-validate>
+        <div class="checkbox form-group">
+          <label for="postTax">
+            <input
+              type="checkbox"
+              id="postTax"
+              name="postTax"
+              ng-model="formData.postTax"
+              ng-checked="formData.postTax"
+            />
+            {{'Post Tax' | translate }}
+          </label>
+        </div>
+        <div class="checkbox form-group">
+          <label for="postPenalty">
+            <input
+              type="checkbox"
+              id="postPenalty"
+              name="postPenalty"
+              ng-model="formData.postPenalty"
+
+            />
+            {{'Post Penalty' | translate }}
+          </label>
+        </div>
+        <div class="">
+          <label class="control-label " style="display:block" for="comment">{{ 'label.input.comment' | translate }}</label>
+
+          <div class="col-sm-9">
+              <textarea row="3" id="comment" name="comment" ng-model="formData.comment" class="form-control"></textarea>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <br>
+
+        <button class="btn btn-warning" ng-click="cancel()">{{'label.button.cancel' | translate}}</button>
+        <button class="btn btn-primary" ng-click="undoTransaction()">Undo</button>
+    </div>
+  </script>
+  <script type="text/ng-template" id="closetransaction.html">
+    <div class="modal-header silver">
+        <h3 class="bolder">Close Contract</h3>
+    </div>
+    <div class="modal-body ">
+        <api-validate></api-validate>
+
+        <div class="checkbox form-group">
+          <label for="postTax">
+            <input
+              type="checkbox"
+              id="postTax"
+              name="postTax"
+              ng-model="formData.postTax"
+              ng-checked="formData.postTax"
+            />
+            {{'Post Tax' | translate }}
+          </label>
+        </div>
+        <div class="checkbox form-group">
+          <label for="postPenalty">
+            <input
+              type="checkbox"
+              id="postPenalty"
+              name="postPenalty"
+              ng-model="formData.postPenalty"
+
+            />
+            {{'Post Penalty' | translate }}
+          </label>
+        </div>
+        <div class="">
+          <label class="control-label " style="display:block" for="comment">{{ 'label.input.comment' | translate }}</label>
+
+          <div class="col-sm-9">
+              <textarea row="3" id="comment" name="comment" ng-model="formData.comment" class="form-control"></textarea>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+
+        <br>
+        <button class="btn btn-warning" ng-click="cancel()">{{'label.button.cancel' | translate}}</button>
+        <button class="btn btn-primary" ng-click="undoTransaction()">Close</button>
+    </div>
+  </script>
+  <script type="text/ng-template" id="success.html">
+    <div class="modal-header silver" style="text-align:center; border:none" >
+        <h3 class="bolder">Operation Successful</h3>
+    </div>
+    <div class="modal-footer silver" style="text-align:center; border:none">
+        <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+    </div>
+  </script>
+
+  <div class="card">
+    <api-validate></api-validate>
+    <div class="content">
+      <div class="toolbar">
+        <div ng-hide="transaction.type.contra" class="btn-group pull-right">
+          <a ng-click="undo('undo')" class="btn btn-primary"
+            >{{ 'label.button.undo' | translate}}</a
+          >
+          <a ng-click="undo('close')" class="btn btn-danger"
+            ><i class="fa fa-trash"></i>{{ 'label.button.close' | translate}}</a
+          >
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table width="100%">
+          <tr>
+            <td width="20%" style="padding-block: 4px">
+              {{ 'Contract Type' | translate}}
+            </td>
+            <td width="80%">{{currentContract.contractType}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Ref No' | translate}}</td>
+            <td>{{currentContract.referenceNo}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Start Date' | translate}}</td>
+            <td>{{currentContract.startDate}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Maturity Date' | translate}}</td>
+            <td>{{currentContract.maturityDate}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'label.heading.currency' | translate}}
+            </td>
+            <td>{{currentContract.currencyCode}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'label.heading.amount' | translate}}
+            </td>
+            <td>{{currentContract.amount | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Rate' | translate}}</td>
+            <td>{{currentContract.rate | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Tenor' | translate}}</td>
+            <td>{{currentContract.tenor | number}}</td>
+          </tr>
+          <tr data-ng-show="isFixedDeposit">
+            <td style="padding-block: 4px">
+              {{ 'Old Contract Ref' | translate}}
+            </td>
+            <td>{{currentContract.oldContractRef}}</td>
+          </tr>
+          <tr data-ng-hide="isFixedDeposit">
+            <td style="padding-block: 4px">{{ 'Yield' | translate}}</td>
+            <td>{{currentContract.yield | number}}</td>
+          </tr>
+          <tr data-ng-hide="isFixedDeposit">
+            <td style="padding-block: 4px">
+              {{ 'Discounted Value' | translate}}
+            </td>
+            <td>{{currentContract.discountedValue | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Days In Year' | translate}}</td>
+            <td>{{currentContract.daysInYear | number}}</td>
+          </tr>
+          <tr data-ng-hide="isFixedDeposit">
+            <td style="padding-block: 4px">{{ 'Yield Amount' | translate}}</td>
+            <td>{{currentContract.yieldAmount | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'Total Interest' | translate}}
+            </td>
+            <td>{{currentContract.totalInterest | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Total Accrued' | translate}}</td>
+            <td>{{currentContract.totalAccrued | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'Daily Accrued Interest' | translate}}
+            </td>
+            <td>{{currentContract.dailyAccruedInterest|number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'Total Interest Paid' | translate}}
+            </td>
+            <td>{{currentContract.totalInterestPaid | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'Witholding Tax' | translate}}
+            </td>
+            <td>{{currentContract.witholdingTax | number}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Penalty' | translate}}</td>
+            <td>{{currentContract.penalty}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Apply Tax' | translate}}</td>
+            <td>{{currentContract.applyTax }}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'Maturity Amount' | translate}}
+            </td>
+            <td>{{currentContract.maturityAmount}}</td>
+          </tr>
+          <tr data-ng-show="isFixedDeposit">
+            <td style="padding-block: 4px">
+              {{ 'Rollover Number' | translate}}
+            </td>
+            <td>{{currentContract.rolloverNo}}</td>
+          </tr>
+          <tr data-ng-show="isFixedDeposit">
+            <td style="padding-block: 4px">
+              {{ 'Rollover Method' | translate}}
+            </td>
+            <td>{{currentContract.rolloverMethod}}</td>
+          </tr>
+
+          <tr>
+            <td style="padding-block: 4px">
+              {{ 'Last Accrual Date' | translate}}
+            </td>
+            <td>{{currentContract.lastAccrualDate}}</td>
+          </tr>
+
+          <tr>
+            <td style="padding-block: 4px">{{ 'Credit GL' | translate}}</td>
+            <td>{{currentContract.creditGl}}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Debit GL' | translate}}</td>
+            <td>{{currentContract.debitGl }}</td>
+          </tr>
+          <tr>
+            <td style="padding-block: 4px">{{ 'Tax GL' | translate}}</td>
+            <td>{{currentContract.taxGl }}</td>
+          </tr>
+
+          <tr>
+            <td style="padding-block: 4px">{{ 'Status' | translate}}</td>
+            <td>{{currentContract.status }}</td>
+          </tr>
+          <tr class="span2"></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
