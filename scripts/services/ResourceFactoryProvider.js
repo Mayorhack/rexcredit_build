@@ -107,6 +107,16 @@
             //     update: { method: "PUT" },
             //   }
             // ),
+            documentDownloadResource: defineResource(
+              apiVer + "/filelocation/fetch",
+              {},
+              {
+                getAllDocuments: {
+                  method: "GET",
+                  params: { limit: 1000 },
+                },
+              }
+            ),
             clientResource: defineResource(
               apiVer + "/clients/:clientId/:anotherresource",
               {
@@ -859,6 +869,40 @@
                 get: { method: "GET" },
               }
             ),
+            validateBatchStatus: defineResource(
+              apiVer + "/tellerposting/fetchUploadStatus",
+              {},
+              {
+                get: { method: "GET" },
+              }
+            ),
+            fixedAssetResource: defineResource(
+              apiVer + "/fixedassets",
+              {},
+              {
+                getAllFixedAssets: {
+                  method: "GET",
+                  isArray: true,
+                },
+              }
+            ),
+            AfixedAssetResource: defineResource(
+              apiVer + "/fixedassets/:id",
+              {},
+              {
+                getAFixedAsset: {
+                  method: "GET",
+                },
+              }
+            ),
+            createFixedAssetResource: defineResource(
+              apiVer + "/fixedassets/create",
+              {},
+              {
+                create: { method: "POST" },
+              }
+            ),
+
             contractMasterResource: defineResource(
               apiVer + "/contracts/fetch",
               {},
@@ -920,6 +964,15 @@
               {
                 run: {
                   method: "POST",
+                },
+              }
+            ),
+            fetchBusinessDateResource: defineResource(
+              apiVer + "/eod/fetchBusinessDate",
+              {},
+              {
+                get: {
+                  method: "GET",
                 },
               }
             ),

@@ -1335,6 +1335,193 @@
 })(mifosX.controllers || {});
 ;(function (module) {
   mifosX.controllers = _.extend(module, {
+    CreateFixedAssetController: function (
+      scope,
+      resourceFactory,
+      location,
+      $routeParams,
+      $uibModal,
+      dateFilter
+    ) {
+      scope.coadata = [];
+      scope.assetData = [];
+      scope.accountTypes = [];
+      scope.rolloverMethods = [];
+      scope.usageTypes = [];
+      scope.headerTypes = [];
+      scope.formData = scope.formData || {};
+      scope.glAccountOptions = [];
+      scope.accountRequired = false;
+      scope.errorMsg = "";
+      scope.showGL = false;
+      scope.glCodes = [];
+      scope.formData.costAssetGlAccountId = 12;
+      scope.formData.bankGlAccountId = 13;
+      scope.formData.lossOnDisposalGlAccountId = 14;
+      scope.formData.gainOnDisposalGlAccountId = 15;
+      scope.formData.depreciationExpenseGlAccountId = 16;
+      scope.formData.accumulatedDepreciationGlAccountId = 17;
+
+      resourceFactory.accountCoaResource.getAllAccountCoas(function(data) {
+        scope.glAccountOptions = data.map(account => ({
+          id: account.id,
+          name: account.name + ' (' + account.glCode + ')'
+        }));
+      });
+
+      resourceFactory.officeResource.getAllOffices(function (data) {
+        scope.offices = data;
+        scope.formData.officeId = scope.offices[0].id;
+    });
+
+      if ($routeParams.parent) {
+        scope.cancel = "#/fixed-asset/" + $routeParams.parent;
+      } else {
+        scope.cancel = "#/fixed-asset/";
+      }
+      // formatDate = function (date) {
+      //   if (!date) return "";
+
+      //   let year = date.getFullYear();
+      //   let month = (date.getMonth() + 1).toString().padStart(2, "0");
+      //   let day = date.getDate().toString().padStart(2, "0");
+
+      //   // Format as YYYY-MM-DD
+      //   return `${day}-${month}-${year}`;
+      // };
+    //   formatDate = function(date) {
+    //     if (!date) return "";
+        
+    //     const months = [
+    //         "january", "february", "march", "april", "may", "june",
+    //         "july", "august", "september", "october", "november", "december"
+    //     ];
+        
+    //     let year = date.getFullYear();
+    //     let month = months[date.getMonth()];
+    //     let day = date.getDate().toString().padStart(2, "0");
+        
+    //     // Format as DD-Month-YYYY
+    //     return `${day}-${month}-${year}`;
+    // };
+      var SuccessModalInstanceCtrl = function ($scope, $uibModalInstance) {
+        $scope.close = function () {
+          $uibModalInstance.close("activate");
+        };
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss("cancel");
+          location.path("/contract-master");
+        };
+      };
+      scope.calculateDate = function () {
+        if (!scope.formData.purchaseDate || !scope.formData.assetType) {
+          scope.errorMsg = "Please fill the required fields";
+          return;
+        } else {
+          scope.errorMsg = "";
+        };
+      };
+      
+      scope.submit = function () {
+
+        scope.formData.costAssetGlAccountId = Number(scope.formData.costAssetGlAccountId);
+        scope.formData.bankGlAccountId = Number(scope.formData.bankGlAccountId);
+        scope.formData.lossOnDisposalGlAccountId = Number(scope.formData.lossOnDisposalGlAccountId);
+        scope.formData.gainOnDisposalGlAccountId = Number(scope.formData.gainOnDisposalGlAccountId);
+        scope.formData.officeId = this.formData.officeId;
+        scope.formData.dateFormat = scope.df;
+        scope.formData.locale = scope.optlang.code;
+        scope.formData.location = this.formData.location;
+        scope.formData.purchaseDate = dateFilter(this.formData.purchaseDate, scope.df);
+
+
+
+
+        resourceFactory.createFixedAssetResource.create(
+          {
+            ...this.formData,
+            // purchaseDate: formatDate(this.formData.purchaseDate),
+            allowManualGlPosting: this.formData.allowManualGlPosting ? "Y" : "N",
+          },
+          function (data) {
+            if (data.responseCode == "000") {
+              $uibModal.open({
+                templateUrl: "success.html",
+                controller: SuccessModalInstanceCtrl,
+              });
+            } else {
+              scope.errorMsg = data.responseMessage;
+            }
+          }
+        );
+      };
+
+      // scope.getAccountName = function () {
+      //   resourceFactory.accountLookupResource.get(
+      //     {
+      //       accountNumber: scope.formData.sourceAccount,
+      //       finEntityCode: "MIFOS",
+      //       finEntityType: "INTERNAL",
+      //     },
+      //     function (data) {
+      //       if (data.responseCode == "000") {
+      //         scope.formData.accountName = data.name;
+      //       } else {
+      //         scope.errorMsg = data.responseMessage;
+      //       }
+      //     }
+      //   );
+      // };
+
+      // scope.selectContract = function () {
+      //   console.log(scope.formData.contractType);
+      //   if (scope.formData.contractType === "FIXED_DEPOSIT") {
+      //     scope.accountRequired = true;
+      //     scope.showGL = false;
+      //   } else if (scope.formData.contractType != "FIXED_DEPOSIT") {
+      //     scope.showGL = true;
+      //     scope.accountRequired = false;
+      //   }
+      // };
+      // scope.fetchAccount = function () {
+      //   resourceFactory.accountLookupResource.get(
+      //     {
+      //       accountNumber: scope.formData.sourceAccount,
+      //       finEntityCode: "MIFOS",
+      //       finEntityType: "INTERNAL",
+      //     },
+      //     function (data) {
+      //       scope.formData.beneficiaryName = data.name;
+      //     }
+      //   );
+      // };
+      // resourceFactory.getGLCodesResource.get({}, function (data) {
+      //   scope.glCodes = data.listData;
+      // });
+      // resourceFactory.getLookupResource.get(
+      //   { categoryCode: "ROLLOVER_METHOD" },
+      //   function (data) {
+      //     scope.rolloverMethods = data.listData;
+      //   }
+      // );
+    },
+  });
+  mifosX.ng.application
+    .controller("CreateFixedAssetController", [
+      "$scope",
+      "ResourceFactory",
+      "$location",
+      "$routeParams",
+      "$uibModal",
+      "dateFilter",
+      mifosX.controllers.CreateFixedAssetController,
+    ])
+    .run(function ($log) {
+      $log.info("CreateFixedAssetController initialized");
+    });
+})(mifosX.controllers || {});
+;(function (module) {
+  mifosX.controllers = _.extend(module, {
     CreateTellerPostingController: function (
       scope,
       resourceFactory,
@@ -1772,6 +1959,155 @@
     });
 }(mifosX.controllers || {}));
 ;(function (module) {
+  mifosX.controllers = _.extend(module, {
+    FixedAssetController: function (
+      scope,
+      $rootScope,
+      translate,
+      resourceFactory,
+      location,
+      anchorScroll,
+      $uibModal
+    ) {
+      $rootScope.tempNodeID = -100; // variable used to store nodeID (from directive), so it(nodeID) is available for detail-table
+
+      scope.coadata = [];
+      scope.assetData = [];
+      scope.currentContract = {};
+      scope.isTreeView = false;
+      today = `${new Date().getFullYear()}-${
+        new Date().getMonth() + 1
+      }-${new Date().getDate()}`;
+      scope.formData = {};
+      scope.contractTypes = [
+        { name: "Takings", code: "TAKINGS" },
+        { name: "Investment", code: "INVESTMENT" },
+        { name: "TBill", code: "TBILL" },
+        { name: "Fixed Deposit", code: "FIXED_DEPOSIT" },
+        { name: "Placements", code: "PLACEMENTS" },
+      ];
+
+      scope.routeTo = function (id) {
+        location.path("/viewglaccount/" + id);
+      };
+      scope.open = function (currentContract) {
+        scope.currentContract = currentContract;
+
+        $uibModal.open({
+          templateUrl: "current.html",
+          controller: ModalInstanceCtrl,
+        });
+        scope.currentContract = currentContract;
+      };
+      scope.routeToDetails = function (id, type) {
+        location.path("/fixed-asset/" + id + "/" + type + "/details");
+      };
+      var ModalInstanceCtrl = function ($scope, $uibModalInstance) {
+        $scope.save = function () {
+          resourceFactory.approveTellerPosting.approve(
+            {},
+            {
+              otp: this.formData.otp,
+              comment: this.formData.comment,
+              ...scope.formData,
+            },
+            function (data) {
+              resourceFactory.tellerPostingResource.getAllAccountCoas(
+                { endDate: today },
+                function (data) {
+                  scope.coadatas = data.transactionResponseList;
+                }
+              );
+              $uibModalInstance.close("activate");
+              $uibModal.open({
+                templateUrl: "success.html",
+                controller: SuccessModalInstanceCtrl,
+              });
+            }
+          );
+        };
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss("cancel");
+        };
+      };
+      var SuccessModalInstanceCtrl = function ($scope, $uibModalInstance) {
+        $scope.close = function () {
+          $uibModalInstance.close("activate");
+        };
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss("cancel");
+        };
+      };
+      formatDate = function (date) {
+        if (!date) return "";
+
+        let year = date.getFullYear();
+        let month = (date.getMonth() + 1).toString().padStart(2, "0");
+        let day = date.getDate().toString().padStart(2, "0");
+
+        // Format as YYYY-MM-DD
+        return `${year}-${month}-${day}`;
+      };
+      scope.scrollto = function (link) {
+        location.hash(link);
+        anchorScroll();
+      };
+
+      if (!scope.searchCriteria.acoa) {
+        scope.searchCriteria.acoa = null;
+        scope.saveSC();
+      }
+
+      scope.onFilter = function () {
+        scope.searchCriteria.acoa = scope.filterText || "";
+        scope.saveSC();
+        getAll();
+      };
+
+      scope.ChartsPerPage = 15;
+      getAll = function (pageNumber) {
+        resourceFactory.fixedAssetResource.getAllFixedAssets(
+          {
+            // contractType: scope.formData.contractType || "TAKINGS",
+            // endDate:
+            //   this.formatDate(scope.formData.endDate) ||
+            //   this.formatDate(new Date()),
+            // startDate: scope.formData?.startDate
+            //   ? this.formatDate(scope.formData.startDate)
+            //   : "2024-01-01",
+            pageIndex: pageNumber || 0,
+            pageSize: scope.ChartsPerPage,
+            // refNo: scope.formData.refNo,
+          },
+          function (data) {
+            scope.assetDatas = data;
+            scope.totalFixedAssets = data.length;
+          }
+        );
+      };
+
+      scope.getResultsPage = function (pageNumber) {
+        getAll(pageNumber - 1);
+      };
+      getAll();
+    },
+  });
+  mifosX.ng.application
+    .controller("FixedAssetController", [
+      "$scope",
+      "$rootScope",
+      "$translate",
+      "ResourceFactory",
+      "$location",
+      "$anchorScroll",
+      "$uibModal",
+      mifosX.controllers.FixedAssetController,
+    ])
+    .run(function ($log) {
+      $log.info("FixedAssetController initialized");
+    });
+})(mifosX.controllers || {});
+;(function (module) {
     mifosX.controllers = _.extend(module, {
         JournalEntryController: function (scope, resourceFactory, location, dateFilter) {
 
@@ -1898,78 +2234,65 @@
       scope.formData = {};
       // scope.first = {};
 
-      resourceFactory.currencyConfigResource.get(
-        { fields: "selectedCurrencyOptions" },
-        function (data) {
-          scope.currencyOptions = data.selectedCurrencyOptions;
-          scope.formData.currencyCode = scope.currencyOptions[0].code;
-        }
-      );
+            scope.formData = {};
+            // scope.first = {};
 
-      resourceFactory.getLookupResource.get(
-        { categoryCode: "GL_CODES" },
-        function (data) {
-          scope.glCodeOptions = data.listData;
-        }
-      );
+            resourceFactory.getLookupResource.get(
+                { categoryCode: "GL_CODES" },
+                function (data) {
+                  scope.glCodeOptions = data.listData;
+                }
+              );
 
-      resourceFactory.getLookupResource.get(
-        {
-          categoryCode: "PRODUCT_LIST",
-          parentId: parseInt("PORTFOLIO_TYPE") || 2,
-        },
-        function (data) {
-          scope.productListOptions = data.listData;
-        }
-      );
+              resourceFactory.getLookupResource.get(
+                { categoryCode: "PRODUCT_LIST", parentId: parseInt("PORTFOLIO_TYPE") || 2 },
+                function (data) {
+                  scope.productListOptions = data.listData;
+                }
+              );
 
-      resourceFactory.getLookupResource.get(
-        {
-          categoryCode: "ACCOUNT_TAG_LIST",
-          parentId: parseInt("PORTFOLIO_TYPE") || 2,
-        },
-        function (data) {
-          scope.accountTypeOptions = data.listData;
-        }
-      );
+              resourceFactory.getLookupResource.get(
+                { categoryCode: "ACCOUNT_TAG_LIST", parentId: parseInt("PORTFOLIO_TYPE") || 2 },
+                function (data) {
+                  scope.accountTypeOptions = data.listData;
+                }
+              );
 
-      resourceFactory.getLookupResource.get(
-        { categoryCode: "PORTFOLIO_TYPE" },
-        function (data) {
-          scope.portfolioTypeOptions = data.listData;
-        }
-      );
+              resourceFactory.getLookupResource.get(
+                { categoryCode: "PORTFOLIO_TYPE" },
+                function (data) {
+                  scope.portfolioTypeOptions = data.listData;
+                }
+              );
 
-      resourceFactory.getLookupResource.get(
-        { categoryCode: "CHARGES" },
-        function (data) {
-          scope.chargesOptions = data.listData;
-        }
-      );
+              resourceFactory.getLookupResource.get(
+                { categoryCode: "CHARGES" },
+                function (data) {
+                  scope.chargesOptions = data.listData;
+                }
+              );
 
-      resourceFactory.getLookupResource.get(
-        { categoryCode: "PAYMENT_TYPE" },
-        function (data) {
-          scope.paymentTypeOptions = data.listData;
-        }
-      );
+              resourceFactory.getLookupResource.get(
+                { categoryCode: "PAYMENT_TYPE" },
+                function (data) {
+                  scope.paymentTypeOptions = data.listData;
+                }
+              );
 
-      scope.submit = function () {
-        console.log("jdjdjd");
-        var glProduct = new Object();
+            scope.submit = function () {
+                var glProduct = new Object();
+                glProduct.locale = scope.optlang.code;
+                glProduct.officeId = this.formData.officeId;
+                glProduct.currencyCode = this.formData.currencyCode;
+                glProduct.glCode = this.formData.glCode;
+                glProduct.accounttypetag = this.formData.accounttypetag;
+                glProduct.portfolioType = this.formData.portfolioType;
+                glProduct.productList = this.formData.productList;
+                glProduct.charges = this.formData.charges;
+                glProduct.paymentType = this.formData.paymentType;
 
-        glProduct.locale = scope.optlang.code;
-        glProduct.officeId = this.formData.officeId;
-        glProduct.currencyCode = this.formData.currencyCode;
-        glProduct.glCode = this.formData.glCode;
-        glProduct.accounttypetag = this.formData.accounttypetag;
-        glProduct.portfolioType = this.formData.portfolioType;
-        glProduct.productList = this.formData.productList;
-        glProduct.charges = this.formData.charges;
-        glProduct.paymentType = this.formData.paymentType;
-
-        resourceFactory.saveGlCodeResource.save({}, glProduct, function (data) {
-          location.path("/viewtransactions/" + data.glCode);
+                resourceFactory.saveGlCodeResource.save(glProduct, function (data) {
+                    location.path('/productGL/' + data.glProduct);
         });
       };
     },
@@ -2763,6 +3086,142 @@
         $log.info("ViewFinancialActivityController initialized");
     });
 }(mifosX.controllers || {}));
+;(function (module) {
+  mifosX.controllers = _.extend(module, {
+    ViewFixedAssetDetailsController: function (
+      scope,
+      resourceFactory,
+      location,
+      routeParams,
+      dateFilter,
+      $uibModal,
+      $rootScope
+    ) {
+      scope.details = [];
+      scope.currentAsset = {};
+      scope.formData = {};
+      scope.assetData = [];
+      scope.ChartsPerPage = 15;
+      getAll = function (pageNumber) {
+        resourceFactory.AfixedAssetResource.getAFixedAsset(
+          {
+            // contractType: scope.formData.contractType || "TAKINGS",
+            // endDate:
+            //   this.formatDate(scope.formData.endDate) ||
+            //   this.formatDate(new Date()),
+            // startDate: scope.formData?.startDate
+            //   ? this.formatDate(scope.formData.startDate)
+            //   : "2024-01-01",
+            id: routeParams.id,
+            assetType: routeParams.type,
+            pageIndex: pageNumber || 0,
+            pageSize: scope.ChartsPerPage,
+            // refNo: scope.formData.refNo,
+          },
+          function (data) {
+            scope.currentAsset = data;
+            // scope.totalFixedAssets = data.length;
+          }
+        );
+      };
+
+      scope.getResultsPage = function (pageNumber) {
+        getAll(pageNumber - 1);
+      };
+      getAll();
+
+
+      // scope.undo = function (action) {
+      //   scope.action = action;
+      //   $uibModal.open({
+      //     templateUrl:
+      //       action === "close"
+      //         ? "closetransaction.html"
+      //         : "undotransaction.html",
+      //     controller: UndoTransactionModel,
+      //     resolve: {
+      //       action: function () {
+      //         return action;
+      //       },
+      //     },
+      //   });
+      // };
+
+      // var UndoTransactionModel = function ($scope, $uibModalInstance, action) {
+      //   $scope.undoTransaction = function () {
+      //     console.log(scope.formData);
+
+      //     if (scope.action === "undo") {
+      //       resourceFactory.undoContractResource.undo(
+      //         {},
+      //         {
+      //           referenceNo: routeParams.id,
+      //           postPenalty: this.formData?.postPenalty ? "Y" : "N",
+      //           postTax: this.formData?.postTax ? "Y" : "N",
+      //           comment: this.formData?.comment,
+      //         },
+      //         function (data) {
+      //           if (data.responseCode === "000") {
+      //             $uibModalInstance.dismiss("cancel");
+      //             $uibModal.open({
+      //               templateUrl: "success.html",
+      //               controller: SuccessModalInstanceCtrl,
+      //             });
+      //           }
+      //         }
+      //       );
+      //     } else {
+      //       resourceFactory.closeContractResource.close(
+      //         {},
+      //         {
+      //           referenceNo: routeParams.id,
+      //           postPenalty: this.formData?.postPenalty ? "Y" : "N",
+      //           postTax: this.formData?.postTax ? "Y" : "N",
+      //           comment: this.formData?.comment,
+      //         },
+      //         function (data) {
+      //           if (data.responseCode === "000") {
+      //             $uibModalInstance.dismiss("cancel");
+      //             $uibModal.open({
+      //               templateUrl: "success.html",
+      //               controller: SuccessModalInstanceCtrl,
+      //             });
+      //           }
+      //           $uibModalInstance.dismiss("cancel");
+      //         }
+      //       );
+      //     }
+      //   };
+      //   $scope.cancel = function () {
+      //     $uibModalInstance.dismiss("cancel");
+      //   };
+      // };
+      // var SuccessModalInstanceCtrl = function ($scope, $uibModalInstance) {
+      //   $scope.close = function () {
+      //     $uibModalInstance.close("activate");
+      //   };
+      //   $scope.cancel = function () {
+      //     $uibModalInstance.dismiss("cancel");
+      //     location.path("/contract-master");
+      //   };
+      // };
+    },
+  });
+  mifosX.ng.application
+    .controller("ViewFixedAssetDetailsController", [
+      "$scope",
+      "ResourceFactory",
+      "$location",
+      "$routeParams",
+      "dateFilter",
+      "$uibModal",
+      "$rootScope",
+      mifosX.controllers.ViewFixedAssetDetailsController,
+    ])
+    .run(function ($log) {
+      $log.info("ViewFixedAssetDetailsController initialized");
+    });
+})(mifosX.controllers || {});
 ;(function (module) {
   mifosX.controllers = _.extend(module, {
     ViewTransactionController: function (
@@ -21140,197 +21599,257 @@
     });
 }(mifosX.controllers || {}));
 ;(function (module) {
-    mifosX.controllers = _.extend(module, {
-        ExpertSearchController: function (scope, resourceFactory, location) {
-        	scope.dashModel = 'dashboard';
-            scope.switch = function() {
-	        	location.path('/richdashboard');
-			}
-            
-            scope.searchParams = ['create client', 'clients', 'create group', 'groups', 'centers', 'create center', 'configuration', 'tasks', 'templates', 'system users',
-                                  'create template', 'create loan product', 'create saving product', 'roles', 'add role', 'configure maker checker tasks',
-                                  'users', 'loan products', 'charges', 'saving products', 'offices', 'create office', 'currency configurations', 'user settings',
-                                  'create user', 'employees', 'create employee', 'manage funds', 'offices', 'chart of accounts', 'frequent postings', 'Journal entry',
-                                  'search transaction', 'account closure', 'accounting rules', 'add accounting rule', 'data tables', 'create data table', 'add code',
-                                  'jobs', 'codes', 'reports', 'create report', 'holidays', 'create holiday', 'create charge', 'product mix', 'add member', 'add product mix',
-                                  'bulk loan reassignment', 'audit', 'create accounting closure', 'enter collection sheet', 'navigation', 'accounting', 'organization', 'system'];
-            scope.search = function () {
-		      switch (this.formData.search) {
-		          case 'create client':
-		              location.path('/createclient');
-		              break;
-		          case 'clients':
-		              location.path('/clients');
-		              break;
-		          case 'create group':
-		              location.path('/creategroup');
-		              break;
-		          case 'groups':
-		              location.path('/groups');
-		              break;
-		          case 'create center':
-		              location.path('/createcenter');
-		              break;
-		          case 'centers':
-		              location.path('/centers');
-		              break;
-		          case 'configuration':
-		              location.path('/global');
-		              break;
-		          case 'tasks':
-		              location.path('/tasks');
-		              break;
-		          case 'templates':
-		              location.path('/templates');
-		              break;
-		          case 'create template':
-		              location.path('/createtemplate');
-		              break;
-		          case 'create loan product':
-		              location.path('/createloanproduct');
-		              break;
-		          case 'create saving product':
-		              location.path('/createsavingproduct');
-		              break;
-		          case 'roles':
-		              location.path('/admin/roles');
-		              break;
-		          case 'add role':
-		              location.path('/admin/addrole');
-		              break;
-		          case 'configure maker checker tasks':
-		              location.path('/admin/viewmctasks');
-		              break;
-		          case 'loan products':
-		              location.path('/loanproducts');
-		              break;
-		          case 'charges':
-		              location.path('/charges');
-		              break;
-		          case 'saving products':
-		              location.path('/savingproducts');
-		              break;
-		          case 'offices':
-		              location.path('/offices');
-		              break;
-		          case 'create office':
-		              location.path('/createoffice');
-		              break;
-		          case 'currency configurations':
-		              location.path('/currconfig');
-		              break;
-		          case 'user settings':
-		              location.path('/usersetting');
-		              break;
-		          case 'employees':
-		              location.path('/employees');
-		              break;
-		          case 'create employee':
-		              location.path('/createemployee');
-		              break;
-		          case 'manage funds':
-		              location.path('/managefunds');
-		              break;
-		          case 'chart of accounts':
-		              location.path('/accounting_coa');
-		              break;
-		          case 'frequent postings':
-		              location.path('/freqposting');
-		              break;
-		          case 'journal entry':
-		              location.path('/journalentry');
-		              break;
-		          case 'search transaction':
-		              location.path('/searchtransaction');
-		              break;
-		          case 'account closure':
-		              location.path('/accounts_closure');
-		              break;
-		          case 'accounting rules':
-		              location.path('/accounting_rules');
-		              break;
-		          case 'add accounting rule':
-		              location.path('/add_accrule');
-		              break;
-		          case 'data tables':
-		              location.path('/datatables');
-		              break;
-		          case 'create data table':
-		              location.path('/createdatatable');
-		              break;
-		          case 'add code':
-		              location.path('/addcode');
-		              break;
-		          case 'jobs':
-		              location.path('/jobs');
-		              break;
-		          case 'codes':
-		              location.path('/codes');
-		              break;
-		          case 'reports':
-		              location.path('/reports');
-		              break;
-		          case 'create report':
-		              location.path('/createreport');
-		              break;
-		          case 'holidays':
-		              location.path('/holidays');
-		              break;
-		          case 'create holiday':
-		              location.path('/createholiday');
-		              break;
-		          case 'add member':
-		              location.path('/addmember');
-		              break;
-		          case 'create charge':
-		              location.path('/createcharge');
-		              break;
-		          case 'enter collection sheet':
-		              location.path('/entercollectionsheet');
-		              break;
-		          case 'product mix':
-		              location.path('/productmix');
-		              break;
-		          case 'add product mix':
-		              location.path('/addproductmix');
-		              break;
-		          case 'bulk loan reassignment':
-		              location.path('/bulkloan');
-		              break;
-		          case 'audit':
-		              location.path('/audit');
-		              break;
-		          case 'create accounting closure':
-		              location.path('/createclosure');
-		              break;
-		          case 'navigation':
-		              location.path('/nav/offices');
-		              break;
-		          case 'accounting':
-		              location.path('/accounting');
-		              break;
-		          case 'organization':
-		              location.path('/organization');
-		              break;
-		          case 'system':
-		              location.path('/system');
-		              break;
-		          case 'system users':
-		              location.path('/admin/users');
-		              break;
-		          default:
-		              location.path('/home');
-		      }
-            }
+  mifosX.controllers = _.extend(module, {
+    ExpertSearchController: function (scope, resourceFactory, location) {
+      scope.dashModel = "dashboard";
+      scope.date;
+      scope.switch = function () {
+        location.path("/richdashboard");
+      };
 
+      scope.searchParams = [
+        "create client",
+        "clients",
+        "create group",
+        "groups",
+        "centers",
+        "create center",
+        "configuration",
+        "tasks",
+        "templates",
+        "system users",
+        "create template",
+        "create loan product",
+        "create saving product",
+        "roles",
+        "add role",
+        "configure maker checker tasks",
+        "users",
+        "loan products",
+        "charges",
+        "saving products",
+        "offices",
+        "create office",
+        "currency configurations",
+        "user settings",
+        "create user",
+        "employees",
+        "create employee",
+        "manage funds",
+        "offices",
+        "chart of accounts",
+        "frequent postings",
+        "Journal entry",
+        "search transaction",
+        "account closure",
+        "accounting rules",
+        "add accounting rule",
+        "data tables",
+        "create data table",
+        "add code",
+        "jobs",
+        "codes",
+        "reports",
+        "create report",
+        "holidays",
+        "create holiday",
+        "create charge",
+        "product mix",
+        "add member",
+        "add product mix",
+        "bulk loan reassignment",
+        "audit",
+        "create accounting closure",
+        "enter collection sheet",
+        "navigation",
+        "accounting",
+        "organization",
+        "system",
+      ];
+      scope.search = function () {
+        switch (this.formData.search) {
+          case "create client":
+            location.path("/createclient");
+            break;
+          case "clients":
+            location.path("/clients");
+            break;
+          case "create group":
+            location.path("/creategroup");
+            break;
+          case "groups":
+            location.path("/groups");
+            break;
+          case "create center":
+            location.path("/createcenter");
+            break;
+          case "centers":
+            location.path("/centers");
+            break;
+          case "configuration":
+            location.path("/global");
+            break;
+          case "tasks":
+            location.path("/tasks");
+            break;
+          case "templates":
+            location.path("/templates");
+            break;
+          case "create template":
+            location.path("/createtemplate");
+            break;
+          case "create loan product":
+            location.path("/createloanproduct");
+            break;
+          case "create saving product":
+            location.path("/createsavingproduct");
+            break;
+          case "roles":
+            location.path("/admin/roles");
+            break;
+          case "add role":
+            location.path("/admin/addrole");
+            break;
+          case "configure maker checker tasks":
+            location.path("/admin/viewmctasks");
+            break;
+          case "loan products":
+            location.path("/loanproducts");
+            break;
+          case "charges":
+            location.path("/charges");
+            break;
+          case "saving products":
+            location.path("/savingproducts");
+            break;
+          case "offices":
+            location.path("/offices");
+            break;
+          case "create office":
+            location.path("/createoffice");
+            break;
+          case "currency configurations":
+            location.path("/currconfig");
+            break;
+          case "user settings":
+            location.path("/usersetting");
+            break;
+          case "employees":
+            location.path("/employees");
+            break;
+          case "create employee":
+            location.path("/createemployee");
+            break;
+          case "manage funds":
+            location.path("/managefunds");
+            break;
+          case "chart of accounts":
+            location.path("/accounting_coa");
+            break;
+          case "frequent postings":
+            location.path("/freqposting");
+            break;
+          case "journal entry":
+            location.path("/journalentry");
+            break;
+          case "search transaction":
+            location.path("/searchtransaction");
+            break;
+          case "account closure":
+            location.path("/accounts_closure");
+            break;
+          case "accounting rules":
+            location.path("/accounting_rules");
+            break;
+          case "add accounting rule":
+            location.path("/add_accrule");
+            break;
+          case "data tables":
+            location.path("/datatables");
+            break;
+          case "create data table":
+            location.path("/createdatatable");
+            break;
+          case "add code":
+            location.path("/addcode");
+            break;
+          case "jobs":
+            location.path("/jobs");
+            break;
+          case "codes":
+            location.path("/codes");
+            break;
+          case "reports":
+            location.path("/reports");
+            break;
+          case "create report":
+            location.path("/createreport");
+            break;
+          case "holidays":
+            location.path("/holidays");
+            break;
+          case "create holiday":
+            location.path("/createholiday");
+            break;
+          case "add member":
+            location.path("/addmember");
+            break;
+          case "create charge":
+            location.path("/createcharge");
+            break;
+          case "enter collection sheet":
+            location.path("/entercollectionsheet");
+            break;
+          case "product mix":
+            location.path("/productmix");
+            break;
+          case "add product mix":
+            location.path("/addproductmix");
+            break;
+          case "bulk loan reassignment":
+            location.path("/bulkloan");
+            break;
+          case "audit":
+            location.path("/audit");
+            break;
+          case "create accounting closure":
+            location.path("/createclosure");
+            break;
+          case "navigation":
+            location.path("/nav/offices");
+            break;
+          case "accounting":
+            location.path("/accounting");
+            break;
+          case "organization":
+            location.path("/organization");
+            break;
+          case "system":
+            location.path("/system");
+            break;
+          case "system users":
+            location.path("/admin/users");
+            break;
+          default:
+            location.path("/home");
         }
-
+      };
+      resourceFactory.fetchBusinessDateResource.get({}, function (data) {
+        scope.date = data.businessDate;
+      });
+    },
+  });
+  mifosX.ng.application
+    .controller("ExpertSearchController", [
+      "$scope",
+      "ResourceFactory",
+      "$location",
+      mifosX.controllers.ExpertSearchController,
+    ])
+    .run(function ($log) {
+      $log.info("ExpertSearchController initialized");
     });
-    mifosX.ng.application.controller('ExpertSearchController', ['$scope', 'ResourceFactory', '$location', mifosX.controllers.ExpertSearchController]).run(function ($log) {
-        $log.info("ExpertSearchController initialized");
-    });
-}(mifosX.controllers || {}));
-
+})(mifosX.controllers || {});
 ;(function (module) {
     mifosX.controllers = _.extend(module, {
         LoginFormController: function (scope, authenticationService, resourceFactory, httpService, $timeout) {
@@ -23978,6 +24497,11 @@
       $uibModal
     ) {
       scope.first = {};
+      scope.response = "";
+      scope.coadatas = [];
+      scope.responseMessage = "";
+      scope.totalContracts = 0;
+      scope.batchNo = "";
       scope.first.templateUrl =
         API_VERSION +
         "/offices/downloadtemplate" +
@@ -23992,7 +24516,12 @@
       scope.onFileSelect = function (files) {
         scope.formData.file = files[0];
       };
-      var SuccessModalInstanceCtrl = function ($scope, $uibModalInstance) {
+      const SuccessModalInstanceCtrl = function (
+        $scope,
+        $uibModalInstance,
+        responseMessage
+      ) {
+        $scope.responseMessage = responseMessage.replaceAll("<br/>", "\n");
         $scope.close = function () {
           $uibModalInstance.close("activate");
         };
@@ -24000,93 +24529,16 @@
           $uibModalInstance.dismiss("cancel");
         };
       };
-      scope.names = [
-        { name: "Run Accrual", code: "RUN_ACCRUAL" },
-        { name: "Run FD INT Income", code: "RUN_FD_INT_INCOME" },
-        { name: "Run Daily Balance", code: " RUN_DAILY_BAL" },
-        {
-          name: "Loan repay Start Rebuild",
-          code: "LOAN_REPAY_START_REBUILD",
-        },
-        {
-          name: "Saving",
-          code: "SAVING_ACCOUNT",
-        },
-        {
-          name: "Saving Rex",
-          code: "SAVING_ACCOUNT_REX",
-        },
-        {
-          name: "Saving Product",
-          code: "SAVING_PRODUCT",
-        },
-        {
-          name: "Loans",
-          code: "LOANS",
-        },
-        {
-          name: "Loan Rex",
-          code: "LOAN_REX",
-        },
-        {
-          name: "Fixed Deposit",
-          code: "FIXED_DEPOSIT",
-        },
-        {
-          name: "Product GL Mapping",
-          code: "PRODUCT_GL_MAPPING",
-        },
-        {
-          name: "Product GL Loan Mapping",
-          code: "PRODUCT_GL_LOAN_MAPPING",
-        },
-        {
-          name: "Tran Type",
-          code: "TRAN_TYPE_UPLOAD",
-        },
-      ];
-      // GL2,
-      //   SAVING_ACCOUNT,
-      //   SAVING_ACCOUNT_REX,
-      //   SAVING_PRODUCT,
-      //   LOANS,
-      //   LOAN_REX,
-      //   FIXED_DEPOSIT,
-      //   PRODUCT_GL_MAPPING,
-      //   PRODUCT_GL_LOAN_MAPPING,
-      //   TRAN_TYPE_UPLOAD,
-      //   GL_BALANCE_UPLOAD,
-      //   BULK_TRAN_UPLOAD,
-      //   TAKINGS;
-
-      // INVESTMENT,
-      //   SAVING_CLIENT_UPDATE,
-      //   LOAN_IPIS,
-      //   RUN_ACCRUAL,
-      //   RUN_FD_INT_INCOME,
-      //   RUN_DAILY_BAL,
-      //   LOAN_REPAY_START_REBUILD;
-
-      scope.refreshImportTable = function () {
-        resourceFactory.importResource.getImports(
-          { entityType: "offices" },
-          function (data) {
-            for (var l in data) {
-              var importdocs = {};
-              importdocs =
-                API_VERSION +
-                "/imports/downloadOutputTemplate?importDocumentId=" +
-                data[l].importId +
-                "&tenantIdentifier=" +
-                $rootScope.tenantIdentifier;
-              data[l].docUrl = importdocs;
-            }
-            scope.imports = data;
-          }
-        );
-      };
-
-      scope.upload = function () {
+      resourceFactory.getLookupResource.get(
+        { categoryCode: "FILE_TYPE_UPLOAD" },
+        function (data) {
+          scope.names = data.listData;
+        }
+      );
+      scope.upload = function (validate) {
+        if (!scope.formData.file) {
+          scope.errorMsg = "Please upload a file";
+        }
         Upload.upload({
           url: $rootScope.hostUrl + API_VERSION + "/tellerposting/upload",
           data: {
@@ -24094,18 +24546,58 @@
             tranDate: scope.formData.tranDate,
             desc: scope.formData.desc,
             name: scope.formData.name,
-            otp: scope.formData.otp,
+            allowOveride: scope.formData.allowOveride ? "Y" : "S",
+            validateStatus: validate ? "Y" : "S",
           },
         }).then(function (data) {
-          if (data.data.responseCode === "000") {
-            $uibModal.open({
-              templateUrl: "success.html",
-              controller: SuccessModalInstanceCtrl,
-            });
+          if (data.data.responseCode) {
+            validate
+              ? null
+              : $uibModal.open({
+                  templateUrl: "success.html",
+                  controller: SuccessModalInstanceCtrl,
+                });
+
+            scope.response = data.data.responseMessage.replaceAll(
+              "<br/>",
+              "\n"
+            );
+            scope.coadatas = data.data.data;
+            scope.totalContracts = data.data.data.length;
           } else {
             scope.errorMsg = data.data.responseMessage;
           }
         });
+      };
+      scope.validateStatus = function () {
+        if (!scope.batchNo) {
+          return;
+        }
+        resourceFactory.validateBatchStatus.get(
+          { batchNo: scope.batchNo },
+          function (data) {
+            if (data.responseCode == "00" || data.responseCode == "000") {
+              scope.responseMessage = data.responseMessage;
+              console.log(scope.responseMessage);
+
+              $uibModal.open({
+                templateUrl: "success.html",
+                controller: SuccessModalInstanceCtrl,
+                resolve: {
+                  responseMessage: function () {
+                    return data.responseMessage;
+                  },
+                },
+              });
+            } else {
+              scope.batchNo = "";
+              scope.errorMsg = data.responseMessage;
+            }
+          }
+        );
+      };
+      scope.close = function () {
+        scope.errorMsg = "";
       };
     },
   });
@@ -25068,6 +25560,93 @@
         $log.info("CurrencyConfigController initialized");
     });
 }(mifosX.controllers || {}));
+;(function (module) {
+  mifosX.controllers = _.extend(module, {
+    DocumentDownloadController: function (
+      scope,
+      routeParams,
+      route,
+      location,
+      resourceFactory,
+      http,
+      $uibModal,
+      API_VERSION,
+      $timeout,
+      $rootScope,
+      Upload
+    ) {
+      scope.clientdocuments = [];
+
+      scope.clientUrl = "/fineract-provider/api/v1/s3filedownload/attachment?";
+
+      scope.getClientDocuments = function () {
+        resourceFactory.documentDownloadResource.getAllDocuments(
+          {},
+          function (data) {
+            scope.clientdocuments = data.data;
+          }
+        );
+      };
+      scope.getClientDocuments();
+
+      scope.downloadDocument = function (documentId, documentName) {
+        const url =
+          window.location.search ||
+          "https://mifos-backend.slsbank.com&tenantIdentifier=rexmfb";
+        const queryParams = new URLSearchParams(url);
+        const tenant = queryParams.get("tenantIdentifier");
+        const baseUrl = queryParams.get("baseApiUrl");
+        const params = new URLSearchParams({
+          documentId,
+        });
+        var myHeaders = new Headers();
+        var auth = JSON.parse(
+          localStorage.getItem("sessionData")
+        ).authenticationKey;
+        myHeaders.append("Authorization", `Basic ${auth}`);
+        myHeaders.append("Fineract-Platform-Tenantid", tenant);
+
+        var requestOptions = {
+          method: "GET",
+
+          headers: myHeaders,
+          responseType: "blob",
+          redirect: "follow",
+        };
+        fetch(baseUrl + scope.clientUrl + params, requestOptions)
+          .then((response) => response.blob())
+          .then((blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${documentName}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          });
+      };
+    },
+  });
+
+  mifosX.ng.application
+    .controller("DocumentDownloadController", [
+      "$scope",
+      "$routeParams",
+      "$route",
+      "$location",
+      "ResourceFactory",
+      "$http",
+      "$uibModal",
+      "API_VERSION",
+      "$timeout",
+      "$rootScope",
+      "Upload",
+      mifosX.controllers.DocumentDownloadController,
+    ])
+    .run(function ($log) {
+      $log.info("DocumentDownloadController initialized");
+    });
+})(mifosX.controllers || {});
 ;(function (module) {
     mifosX.controllers = _.extend(module, {
         EditEmployeeController: function (scope, routeParams, resourceFactory, location, dateFilter) {
@@ -33972,7 +34551,7 @@
       scope.downloadReport = function () {
         const url =
           window.location.search ||
-          "https://mifos-backend.slsbank.com&tenantIdentifier=default";
+          "https://mifos-backend.slsbank.com&tenantIdentifier=rexmfb";
         const queryParams = new URLSearchParams(url);
         const tenant = queryParams.get("tenantIdentifier");
         const baseUrl = queryParams.get("baseApiUrl");
@@ -34006,7 +34585,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "Report.xlsx";
+            a.download = `${routeParams.name}.xlsx`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -36685,6 +37264,7 @@
     ) {
       scope.action = routeParams.action || "";
       scope.accountId = routeParams.id;
+      scope.allGls = [];
       scope.savingAccountId = routeParams.id;
       scope.formData = {};
       scope.entityformData = {};
@@ -36895,6 +37475,7 @@
           scope.showDateField = true;
           scope.showNoteField = true;
           scope.showTAmountField = true;
+
           scope.showOtp = true;
           //   scope.transactionAmountField = true;
           //   scope.isTransaction = true;
@@ -36963,6 +37544,7 @@
           scope.showNoteField = true;
           scope.isTransaction = true;
           scope.transactionAmountField = true;
+          scope.showGlCode = true;
           scope.showPaymentDetails = false;
           scope.taskPermissionName = "DEPOSIT_SAVINGSACCOUNT";
           break;
@@ -36990,6 +37572,7 @@
           scope.labelName = "label.input.transactiondate";
           scope.modelName = "transactionDate";
           scope.showDateField = true;
+          scope.showGlCode = true;
           scope.showNoteField = true;
           scope.isTransaction = true;
           scope.transactionAmountField = true;
@@ -37152,6 +37735,12 @@
       scope.cancel = function () {
         location.path("/viewsavingaccount/" + routeParams.id);
       };
+      resourceFactory.accountCoaResource.getAllAccountCoas(
+        { manualEntriesAllowed: true },
+        function (data) {
+          scope.allGls = data;
+        }
+      );
 
       scope.submit = function () {
         var params = { command: scope.action };
@@ -37174,6 +37763,7 @@
               this.formData.tranCode = "CSWD";
               this.formData.extRefNo = "";
               this.formData.narration = this.formData.note;
+              this.formData.postGlEntry = "Y";
             }
           } else if (scope.action == "deposit") {
             if (this.formData.transactionDate) {
@@ -37184,6 +37774,7 @@
               this.formData.tranCode = "CSDP";
               this.formData.extRefNo = "";
               this.formData.narration = this.formData.note;
+              this.formData.postGlEntry = "Y";
             }
           }
           if (scope.action == "modifytransaction") {

@@ -211,6 +211,7 @@
       .when("/organization", {
         templateUrl: "views/administration/organization.html",
       })
+
       .when("/system", {
         templateUrl: "views/administration/system.html",
       })
@@ -308,6 +309,9 @@
           templateUrl: "views/products/editinterestratechart.html",
         }
       )
+      .when("/document-download", {
+        templateUrl: "views/organization/document.html",
+      })
       .when("/offices", {
         templateUrl: "views/organization/offices.html",
       })
@@ -425,6 +429,9 @@
       .when("/contract-master", {
         templateUrl: "views/accounting/contract_master.html",
       })
+      .when("/fixed-asset", {
+        templateUrl: "views/accounting/fixed_asset.html",
+      })
       .when("/trans-master", {
         templateUrl: "views/accounting/trans-master.html",
       })
@@ -434,8 +441,14 @@
       .when("/book-contract", {
         templateUrl: "views/accounting/bookcontract.html",
       })
+      .when("/create-fixed-asset", {
+        templateUrl: "views/accounting/createFixedAsset.html",
+      })
       .when("/contract-master/:id/:type/details", {
         templateUrl: "views/accounting/view_contract_details.html",
+      })
+      .when("/fixed-asset/:id/:type/details", {
+        templateUrl: "views/accounting/view_fixedAsset_details.html",
       })
       .when("/file-upload", {
         templateUrl:

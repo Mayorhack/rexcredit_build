@@ -1,0 +1,567 @@
+<div class="content-container">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/accounting">{{'label.anchor.accounting' | translate}}</a>
+    </li>
+    <li>
+      <a href="#/fixed-asset">{{'Fixed Assets' | translate}}</a>
+    </li>
+    <li class="active">{{'Create Fixed Asset' | translate}}</li>
+  </ul>
+  <script type="text/ng-template" id="success.html">
+    <div class="modal-header silver" style="text-align:center; border:none" >
+        <h3 class="bolder">Operation Successful</h3>
+    </div>
+    <div class="modal-footer silver" style="text-align:center; border:none">
+        <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+    </div>
+  </script>
+  <form
+    name="createfixedassetform"
+    novalidate=""
+    class="card form-horizontal well"
+    ng-controller="CreateFixedAssetController"
+    rc-submit="submit()"
+  >
+    <api-validate></api-validate>
+    <fieldset>
+      <legend>{{'Create Fixed Asset' | translate}}</legend>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Asset Type' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="assetType"
+            name="assetType"
+            ng-model="formData.assetType"
+            class="form-control"
+            required
+            late-validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="assetType"
+          />
+        </div>
+
+        <label class="control-label col-sm-2"
+          >{{'Asset Name' | translate}}<span class="required">*</span></label
+        >
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="assetName"
+            name="assetName"
+            ng-autofocus="true"
+            ng-model="formData.assetName"
+            class="form-control"
+            required
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="assetName"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Asset Desc' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <input
+            id="assetDescription"
+            type="text"
+            name="assetDescription"
+            ng-model="formData.assetDescription"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="assetDescription"
+          />
+        </div>
+
+        <label class="control-label col-sm-2">
+          {{'Asset Category' | translate}}<span class="required">*</span>
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="assetCategory"
+            name="assetCategory"
+            ng-model="formData.assetCategory"
+            class="form-control"
+            required
+            late-validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="assetCategory"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Asset Code' | translate}}<span class="required">*</span>
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="assetCode"
+            name="assetCode"
+            ng-model="formData.assetCode"
+            class="form-control"
+            required
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="assetCode"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{ 'label.input.office' | translate }}<span class="required">*</span>
+        </label>
+    			<div class="col-sm-3">
+    			    <select 
+                chosen="offices" 
+                id="officeId" 
+                ng-model="formData.officeId" 
+                class="form-control"
+    			      ng-options="office.id as office.name for office in offices" 
+                value="{{office.id}}">
+    			    </select>
+    			  </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="officeId"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Currency Code' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="currencyCode"
+            name="currencyCode"
+            ng-model="formData.currencyCode"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="currencyCode"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Department' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="department"
+            name="department"
+            ng-model="formData.department"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="department"
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Location' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="location"
+            name="location"
+            ng-model="formData.location"
+            class="form-control"
+
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="location"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Purchase Price' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="number"
+            id="purchasePrice"
+            name="purchasePrice"
+            ng-model="formData.purchasePrice"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="purchasePrice"
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Depreciation Rate' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="number"
+            id="depreciationRate"
+            name="depreciationRate"
+            ng-model="formData.depreciationRate"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="depreciationRate"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Salvage Value' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="number"
+            id="salvageValue"
+            name="salvageValue"
+            ng-model="formData.salvageValue"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="salvageValue"
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Useful Life (Years)' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="number"
+            id="usefulLifeYear"
+            name="usefulLifeYear"
+            ng-model="formData.usefulLifeYear"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="usefulLifeYear"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Expiry Date' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="date"
+            id="expiryDate"
+            name="expiryDate"
+            ng-model="formData.expiryDate"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="expiryDate"
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Barcode' | translate}}
+        </label>
+        <div class="col-sm-3">
+          <input
+            type="text"
+            id="barcode"
+            name="barcode"
+            ng-model="formData.barcode"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="barcode"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Purchase Date' | translate}}
+        </label>
+        <!-- <div class="col-sm-3">
+          <input
+            type="date"
+            id="purchaseDate"
+            name="purchaseDate"
+            ng-model="formData.purchaseDate"
+            class="form-control"
+            late-Validate
+          />
+        </div> -->
+        <div class="col-sm-3">
+          <input
+            class="date-disable form-control"
+            id="purchaseDate"
+            type="text"
+            datepicker-pop="dd MMMM yyyy"
+            ng-model="formData.purchaseDate"
+            required
+            is-open="opened"
+            min="'2000-01-01'"
+            max="restrictDate"
+            placeholder="{{'Purchase Date' | translate}}"
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="purchaseDate"
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Cost Asset GL Account' | translate}}<span class="required">*</span>
+        </label>
+          <div class="col-sm-3">
+            <select
+              chosen="glAccountOptions"
+              required
+              id="costAssetGlAccountId"
+              ng-model="formData.costAssetGlAccountId"
+              class="form-control"
+              ng-options="account.id as account.name for account in glAccountOptions"
+              value="{{account.id}}"
+            >
+              <option class="displaynone" value="">
+                {{'Select Cost Asset GL Account' | translate}}
+              </option>
+            </select>
+          </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="costAssetGlAccountId"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Bank GL Account' | translate}}<span class="required">*</span>
+        </label>
+        <div class="col-sm-3">
+          <select
+            chosen="glAccountOptions"
+            required
+            id="bankGlAccountId"
+            ng-model="formData.bankGlAccountId"
+            class="form-control"
+            ng-options="account.id as account.name for account in glAccountOptions"
+            value="{{account.id}}"
+          >
+            <option class="displaynone" value="">
+              {{'Select Bank GL Account' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="bankGlAccountId"
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Loss on Disposal GL Account' | translate}}<span class="required">*</span>
+        </label>
+        <div class="col-sm-3">
+          <select
+            chosen="glAccountOptions"
+            required
+            id="lossOnDisposalGlAccountId"
+            ng-model="formData.lossOnDisposalGlAccountId"
+            class="form-control"
+            ng-options="account.id as account.name for account in glAccountOptions"
+            value="{{account.id}}"
+          >
+            <option class="displaynone" value="">
+              {{'Select Loss on Disposal GL Account' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="lossOnDisposalGlAccountId"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Gain on Disposal GL Account' | translate}}<span class="required">*</span>
+        </label>
+        <div class="col-sm-3">
+          <select
+            chosen="glAccountOptions"
+            required
+            id="gainOnDisposalGlAccountId"
+            ng-model="formData.gainOnDisposalGlAccountId"
+            class="form-control"
+            ng-options="account.id as account.name for account in glAccountOptions"
+            value="{{account.id}}"
+          >
+            <option class="displaynone" value="">
+              {{'Select Gain on Disposal GL Account' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="gainOnDisposalGlAccountId"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          {{'Depreciation Expense GL Account' | translate}}<span class="required">*</span>
+        </label>
+        <div class="col-sm-3">
+          <select
+            chosen="glAccountOptions"
+            required
+            id="depreciationExpenseGlAccountId"
+            ng-model="formData.depreciationExpenseGlAccountId"
+            class="form-control"
+            ng-options="account.id as account.name for account in glAccountOptions"
+            value="{{account.id}}"
+          >
+            <option class="displaynone" value="">
+              {{'Select Depreciation Expense GL Account' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="depreciationExpenseGlAccountId"
+          />
+        </div>
+      
+        <label class="control-label col-sm-2">
+          {{'Accumulated Depreciation GL Account' | translate}}<span class="required">*</span>
+        </label>
+        <div class="col-sm-3">
+          <select
+            chosen="glAccountOptions"
+            required
+            id="accumulatedDepreciationGlAccountId"
+            ng-model="formData.accumulatedDepreciationGlAccountId"
+            class="form-control"
+            ng-options="account.id as account.name for account in glAccountOptions"
+            value="{{account.id}}"
+          >
+            <option class="displaynone" value="">
+              {{'Select Accumulated Depreciation GL Account' | translate}}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="createfixedassetform"
+            valattribute="accumulatedDepreciationGlAccountId"
+          />
+        </div>
+      </div>
+
+
+      <div class="col-sm-3">
+        <div class="checkbox form-group">
+          <label for="allowManualGlPosting">
+            <input
+              type="checkbox"
+              id="allowManualGlPosting"
+              name="allowManualGlPosting"
+              ng-model="formData.allowManualGlPosting"
+              ng-checked="formData.allowManualGlPosting"
+            />
+            {{'Allow Manual GL Posting' | translate }}
+          </label>
+        </div>
+      </div>
+
+      <div class="col-md-offset-5">
+        <a id="cancel" ng-href="{{cancel}}" class="btn btn-default"
+          >{{'label.button.cancel' | translate}}</a
+        >
+        <button
+          id="save"
+          type="submit"
+          class="btn btn-primary"
+          has-permission="CREATE_FIXEDASSET"
+        >
+          {{'label.button.save' | translate}}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+</div>

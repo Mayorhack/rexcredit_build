@@ -110,7 +110,7 @@
         ]
     });
 
-    require(['mifosXComponents.ac3b9d2e', 'mifosXStyles.2e351298'], function (componentsInit) {
+    require(['mifosXComponents.ef0b2e67', 'mifosXStyles.85f9a918'], function (componentsInit) {
         componentsInit().then(function(){
             require(['test/testInitializer'], function (testMode) {
                 if (!testMode) {

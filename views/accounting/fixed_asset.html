@@ -1,0 +1,219 @@
+<div id="viewlptop"></div>
+<div class="content-container" ng-controller="FixedAssetController">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/accounting">{{'label.anchor.accounting' | translate}}</a>
+    </li>
+    <li class="active">{{'label.anchor.fixedAsset' | translate}}</li>
+  </ul>
+
+  <div class="card">
+    <div class="content">
+      <api-validate></api-validate>
+      <div class="toolbar">
+        <h4>{{'label.heading.fixedAsset' | translate}}</h4>
+        <div class="pull-right">
+          <a
+            href="#/create-fixed-asset"
+            class="btn btn-primary"
+            has-permission="CREATE_GLACCOUNT"
+            ><i class="fa fa-plus"></i>&nbsp;&nbsp;{{'Create Fixed Asset' |
+            translate}}</a
+          >
+        </div>
+      </div>
+      <div ng-hide="isTreeView">
+        <h4>Filter Assets</h4>
+          <div
+            class=""
+            style="
+              display: grid;
+              grid-template-columns: repeat(5, minmax(180px, 1fr));
+              gap: 20px;
+            "
+          >
+          <div class="">
+            <input
+              class="form-control"
+              id="assetId"
+              type="number"
+              ng-model="formData.id"
+              placeholder="{{'Asset ID' | translate}}"
+            />
+          </div>
+          
+          <div class="">
+            <input
+              class="form-control"
+              id="assetName"
+              type="text"
+              ng-model="formData.assetName"
+              placeholder="{{'Asset Name' | translate}}"
+            />
+          </div>
+          
+          <div class="">
+            <input
+              class="form-control"
+              id="assetType"
+              type="text"
+              ng-model="formData.assetType"
+              placeholder="{{'Asset Type' | translate}}"
+            />
+          </div>
+          
+          <div class="">
+            <input
+              class="form-control"
+              id="assetCode"
+              type="text"
+              ng-model="formData.assetCode"
+              placeholder="{{'Asset Code' | translate}}"
+            />
+          </div>
+          
+          <div class="">
+            <input
+              class="form-control"
+              id="location"
+              type="text"
+              ng-model="formData.location"
+              placeholder="{{'Location' | translate}}"
+            />
+          </div>
+        </div>
+        <button
+          class="btn btn-block btn-primary"
+          type="submit"
+          data-ng-click="onFilter()"
+          id="fixedAsset-filter-button"
+          style="max-width: 280px; margin-top: 20px"
+        >
+          Search
+        </button>
+
+        <!-- <div class="col-sm-3 paddedbottom10">
+          <label for="startDate">Start Date</label>
+          <input
+            id="startDate"
+            type="text"
+            name="startDate"
+            datepicker-pop="dd MMMM yyyy"
+            class="form-control"
+            ng-model="formData.startDate"
+            is-open="opened"
+            min="'2000-01-01'"
+            max="restrictDate"
+            pl
+          />
+        </div> -->
+        <br />
+        <table class="table">
+          <thead>
+            <tr class="graybg">
+              <th>{{'ID' | translate}}</th>
+              <th>{{'Asset Type' | translate}}</th>
+              <th>{{'Asset Name' | translate}}</th>
+              <th>{{'Asset Code' | translate}}</th>
+
+              <th>{{'Purchase Date' | translate}}</th>
+              <th>{{'Purchase Price' | translate}}</th>
+              <th>{{'Location' | translate}}</th>
+              <th>{{'Depreciation Rate' | translate}}</th>
+              <th>{{'Useful Life Year' | translate}}</th>
+              <th>{{'label.input.status' | translate}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              class="pointer-main"
+              dir-paginate="assetData in assetDatas | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
+              total-items="totalFixedAssets"
+              pagination-id="fixedAssets"
+            >
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.id}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.assetType}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.assetName}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.assetCode}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.purchaseDate}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.purchasePrice.toLocaleString()}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.location}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.depreciationRate.toLocaleString()}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.usefulLifeYear.toLocaleString()}}
+              </td>
+              <td
+                class="pointer"
+                data-ng-click="routeToDetails(assetData.id,assetData.assetType)"
+              >
+                {{assetData.fixedAssetStatus}}
+              </td>
+            </tr>
+          </tbody>
+          <tr>
+            <td colspan="5"></td>
+            <td class="pull-right">
+              <a ng-click="scrollto('viewlptop')"
+                ><i class="fa fa-upload"></i>{{'label.button.top' |
+                translate}}</a
+              >
+            </td>
+          </tr>
+        </table>
+        <dir-pagination-controls
+          boundary-links="true"
+          template-url="bower_components/angular-utils-pagination/dirPagination.tpl.html"
+          on-page-change="getResultsPage(newPageNumber)"
+          pagination-id="fixedAssets"
+        ></dir-pagination-controls>
+      </div>
+
+      <br />
+      <br />
+      <br /><br /><br /><br /><br /><br />
+    </div>
+  </div>
+</div>

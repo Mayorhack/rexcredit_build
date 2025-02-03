@@ -224,7 +224,7 @@
             <td style="padding-block: 4px">
               {{ 'Maturity Amount' | translate}}
             </td>
-            <td>{{currentContract.maturityAmount}}</td>
+            <td>{{currentContract.maturityAmount|number}}</td>
           </tr>
           <tr data-ng-show="isFixedDeposit">
             <td style="padding-block: 4px">

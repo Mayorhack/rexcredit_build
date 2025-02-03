@@ -1,0 +1,223 @@
+<div class="content-container" ng-controller="ViewFixedAssetDetailsController">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/fixed-asset">{{'Fixed Assets' | translate}}</a>
+    </li>
+    <li class="active">{{ 'View Fixed Asset Details' | translate}}</li>
+  </ul>
+  <!-- <script type="text/ng-template" id="undotransaction.html">
+    <div class="modal-header silver">
+        <h3 class="bolder">Undo Contract</h3>
+    </div>
+    <div class="modal-body ">
+        <api-validate></api-validate>
+        <div class="checkbox form-group">
+          <label for="postTax">
+            <input
+              type="checkbox"
+              id="postTax"
+              name="postTax"
+              ng-model="formData.postTax"
+              ng-checked="formData.postTax"
+            />
+            {{'Post Tax' | translate }}
+          </label>
+        </div>
+        <div class="checkbox form-group">
+          <label for="postPenalty">
+            <input
+              type="checkbox"
+              id="postPenalty"
+              name="postPenalty"
+              ng-model="formData.postPenalty"
+
+            />
+            {{'Post Penalty' | translate }}
+          </label>
+        </div>
+        <div class="">
+          <label class="control-label " style="display:block" for="comment">{{ 'label.input.comment' | translate }}</label>
+
+          <div class="col-sm-9">
+              <textarea row="3" id="comment" name="comment" ng-model="formData.comment" class="form-control"></textarea>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <br>
+
+        <button class="btn btn-warning" ng-click="cancel()">{{'label.button.cancel' | translate}}</button>
+        <button class="btn btn-primary" ng-click="undoTransaction()">Undo</button>
+    </div>
+  </script> -->
+  <!-- <script type="text/ng-template" id="closetransaction.html">
+    <div class="modal-header silver">
+        <h3 class="bolder">Close Contract</h3>
+    </div>
+    <div class="modal-body ">
+        <api-validate></api-validate>
+
+        <div class="checkbox form-group">
+          <label for="postTax">
+            <input
+              type="checkbox"
+              id="postTax"
+              name="postTax"
+              ng-model="formData.postTax"
+              ng-checked="formData.postTax"
+            />
+            {{'Post Tax' | translate }}
+          </label>
+        </div>
+        <div class="checkbox form-group">
+          <label for="postPenalty">
+            <input
+              type="checkbox"
+              id="postPenalty"
+              name="postPenalty"
+              ng-model="formData.postPenalty"
+
+            />
+            {{'Post Penalty' | translate }}
+          </label>
+        </div>
+        <div class="">
+          <label class="control-label " style="display:block" for="comment">{{ 'label.input.comment' | translate }}</label>
+
+          <div class="col-sm-9">
+              <textarea row="3" id="comment" name="comment" ng-model="formData.comment" class="form-control"></textarea>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+
+        <br>
+        <button class="btn btn-warning" ng-click="cancel()">{{'label.button.cancel' | translate}}</button>
+        <button class="btn btn-primary" ng-click="undoTransaction()">Close</button>
+    </div>
+  </script>
+  <script type="text/ng-template" id="success.html">
+    <div class="modal-header silver" style="text-align:center; border:none" >
+        <h3 class="bolder">Operation Successful</h3>
+    </div>
+    <div class="modal-footer silver" style="text-align:center; border:none">
+        <button class="btn btn-primary" ng-click="cancel()">Okay</button>
+    </div>
+  </script> -->
+
+  <div class="card">
+    <api-validate></api-validate>
+    <div class="content">
+      <!-- <div class="toolbar">
+        <div ng-hide="transaction.type.contra" class="btn-group pull-right">
+          <a ng-click="undo('undo')" class="btn btn-primary"
+            >{{ 'label.button.undo' | translate}}</a
+          >
+          <a ng-click="undo('close')" class="btn btn-danger"
+            ><i class="fa fa-trash"></i>{{ 'label.button.close' | translate}}</a
+          >
+        </div>
+      </div> -->
+      <div class="table-responsive">
+        <table width="100%">
+            <tr>
+              <td width="20%" style="padding-block: 4px">
+                {{ 'ID' | translate }}
+              </td>
+              <td width="80%">{{currentAsset.id}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Office ID' | translate }}</td>
+              <td>{{currentAsset.officeId}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Asset Type' | translate }}</td>
+              <td>{{currentAsset.assetType}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Cost Asset GL Account' | translate }}</td>
+              <td>{{currentAsset.costAssetGlAccount.name}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Bank GL Account' | translate }}</td>
+              <td>{{currentAsset.bankGlAccount.name}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Loss On Disposal GL Account' | translate }}</td>
+              <td>{{currentAsset.lossOnDisposalGlAccount.name}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Gain On Disposal GL Account' | translate }}</td>
+              <td>{{currentAsset.gainOnDisposalGlAccount.name}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Depreciation Expense GL Account' | translate }}</td>
+              <td>{{currentAsset.depreciationExpenseGlAccountId.name}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Accumulated Depreciation GL Account' | translate }}</td>
+              <td>{{currentAsset.accumulatedDepreciationGlAccountId.name}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Asset Code' | translate }}</td>
+              <td>{{currentAsset.assetCode}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Asset Name' | translate }}</td>
+              <td>{{currentAsset.assetName}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Asset Description' | translate }}</td>
+              <td>{{currentAsset.assetDescription}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Purchase Date' | translate }}</td>
+              <td>{{currentAsset.purchaseDate[0]}}-{{currentAsset.purchaseDate[1]}}-{{currentAsset.purchaseDate[2]}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Department' | translate }}</td>
+              <td>{{currentAsset.department}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Location' | translate }}</td>
+              <td>{{currentAsset.location}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Purchase Price' | translate }}</td>
+              <td>{{currentAsset.purchasePrice | number:2}} {{currentAsset.currencyCode}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Depreciation Rate' | translate }}</td>
+              <td>{{currentAsset.depreciationRate | number:2}}%</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Salvage Value' | translate }}</td>
+              <td>{{currentAsset.salvageValue || 'N/A'}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Useful Life (Years)' | translate }}</td>
+              <td>{{currentAsset.usefulLifeYear}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Barcode' | translate }}</td>
+              <td>{{currentAsset.barcode || 'N/A'}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Fixed Asset Status' | translate }}</td>
+              <td>{{currentAsset.fixedAssetStatus}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Total Depreciation To Date' | translate }}</td>
+              <td>{{currentAsset.totalDepreciationToDate | number:2}} {{currentAsset.currencyCode}}</td>
+            </tr>
+            <tr>
+              <td style="padding-block: 4px">{{ 'Office Name' | translate }}</td>
+              <td>{{currentAsset.officeName}}</td>
+            </tr>
+          </table>      
+        </div>
+    </div>
+  </div>
+</div>

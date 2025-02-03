@@ -1,0 +1,41 @@
+<div class="content-container" ng-controller="DocumentDownloadController">
+  <ul class="breadcrumb">
+    <li>
+      <a href="#/organization">{{'label.anchor.organization' | translate}}</a>
+    </li>
+    <li class="active">{{'Download Document' | translate}}</li>
+  </ul>
+
+  <div class="card">
+    <div class="content">
+      <br />
+      <table class="table" ng-show="clientdocuments.length > 0">
+        <thead>
+          <tr class="graybg">
+            <th>{{'label.heading.name' | translate}}</th>
+            <th>{{'label.heading.filename' | translate}}</th>
+            <th>{{'Created By' | translate}}</th>
+            <th>{{'label.heading.date' | translate}}</th>
+            <th>{{'label.heading.actions' | translate}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="clientdocument in clientdocuments">
+            <td>{{clientdocument.title}}</td>
+
+            <td>{{clientdocument.fileName}}</td>
+            <td>{{clientdocument.createdBy}}</td>
+            <td>{{clientdocument.createdDate | date}}</td>
+            <td>
+              <button
+                ng-click="downloadDocument(clientdocument.id,clientdocument.fileName)"
+              >
+                <i class="fa fa-cloud-download"></i></button
+              >&nbsp;
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

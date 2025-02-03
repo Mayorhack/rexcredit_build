@@ -340,7 +340,28 @@
           />
         </div>
       </div>
-
+      <div class="form-group">
+        <label class="control-label col-sm-2"
+          >{{'Days In Years' | translate}}</label
+        >
+        <div class="col-sm-3">
+          <input
+            id="daysInYear"
+            pattern="^(36[0-6])$"
+            type="text"
+            name="daysInYear"
+            ng-model="formData.daysInYears"
+            class="form-control"
+            late-Validate
+          />
+        </div>
+        <div class="col-sm-1">
+          <form-validate
+            valattributeform="bookcontractform"
+            valattribute="daysInYears"
+          />
+        </div>
+      </div>
       <div class="form-group">
         <div class="col-sm-6">
           <div class="col-sm-3"></div>
@@ -389,6 +410,7 @@
           />
         </div>
       </div>
+
       <div
         class="form-group"
         data-ng-show="formData.contractType==='FIXED_DEPOSIT'||formData.contractType==='PLACEMENTS'"

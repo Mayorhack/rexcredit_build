@@ -5,7 +5,9 @@
 >
   <script type="text/ng-template" id="success.html">
     <div class="modal-header silver" style="text-align:center; border:none" >
-        <h3 class="bolder">Operation Successful</h3>
+        <h3 class="bolder">{{responseMessage||"Operation Successful"}}</h3>
+        <p></p>
+        {{scope.responseMessage}}
     </div>
     <div class="modal-footer silver" style="text-align:center; border:none">
         <button class="btn btn-primary" ng-click="cancel()">Okay</button>
@@ -17,76 +19,49 @@
     </li>
     <li class="active">{{'File Upload' | translate}}</li>
   </ul>
-  <api-validate></api-validate>
+  <api-validate ng-click="close()"></api-validate>
 
-  <div style="margin-top: 20px" class="panel panel-default" ng-show="false">
-    <div class="panel-heading">
-      <h3 class="panel-title">{{'Teller Posting Template' | translate}}</h3>
-    </div>
-    <div class="panel-body">
-      <div class="form-group">
-        <form name="bulkImportTeller" role="form">
-          <div class="form-group">
-            <label class="control-label col-sm-2">
-              {{'label.input.office' | translate}}
-            </label>
-            <div class="col-sm-3">
-              <div>
-                <select
-                  chosen="offices"
-                  id="officeId"
-                  ng-model="formData.officeId"
-                  class="form-control"
-                  ng-options="office.id as office.name for office in offices"
-                  value="{{office.id}}"
-                  ng-change="changeOffice()"
-                >
-                  <option value="">
-                    --{{'label.menu.selectoffice' | translate}}--
-                  </option>
-                </select>
-              </div>
-            </div>
-            &nbsp; &nbsp; &nbsp;
-            <label class="control-label col-sm-2"
-              >{{'label.input.staff' | translate}}</label
-            >
-            <div class="col-sm-3">
-              <select
-                chosen="staffs"
-                id="staffId"
-                ng-model="formData.staffId"
-                class="form-control"
-                ng-options="staff.id as staff.displayName for staff in staffs"
-                value="{{staff.id}}"
-                ng-change="changeStaff()"
-              >
-                <option value="">
-                  --{{'label.menu.selectloanofficer' | translate}}--
-                </option>
-              </select>
-            </div>
-            <a
-              target="_blank"
-              class="btn btn-primary"
-              href="{{hostUrl}}{{first.templateUrl}}{{first.queryParams}}"
-              has-permission="READ_CENTERS"
-              ><i class="fa fa-cloud-download"></i>{{'label.button.download' |
-              translate}}</a
-            >
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
   <div class="panel panel-default">
-    <div class="panel-heading">
+    <div class="panel-heading" style="display: flex">
       <h3 class="panel-title">{{'Bulk File Upload' | translate}}</h3>
+      <form
+        class="form-inline"
+        style="max-width: 300px; margin-left: auto; display: flex; gap: 10px"
+      >
+        <input
+          class="date-disable form-control"
+          id="batchNo"
+          type="text"
+          ng-model="batchNo"
+          placeholder="{{'Batch No' | translate}}"
+          required
+        />
+
+        <button
+          style="width: 100%; max-width: 200px; margin-right: auto"
+          type="button"
+          class="form-control btn btn-default col-sm-2"
+          ng-click="validateStatus()"
+        >
+          {{'Check Status' | translate}}
+        </button>
+      </form>
     </div>
     <div class="panel-body">
       <div class="form-group">
-        <form class="form-inline" role="form">
-          <div class="col-sm-2">
+        <form
+          class="form-inline"
+          style="max-width: 500px; margin-inline: auto; padding-block: 14px"
+        >
+          <div
+            class=""
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+              gap: 40px;
+              row-gap: 20px;
+            "
+          >
             <input
               class="date-disable form-control"
               id="tranDate"
@@ -98,17 +73,13 @@
               max="restrictDate"
               placeholder="{{'Trans. Date' | translate}}"
             />
-          </div>
-          <div class="col-sm-2">
             <input
               class="date-disable form-control"
               id="desc"
               type="text"
               ng-model="formData.desc"
-              placeholder="{{'Description' | translate}}"
+              placeholder="{{'Batch No' | translate}}"
             />
-          </div>
-          <div class="col-sm-2">
             <select
               chosen="names"
               id="name"
@@ -121,94 +92,119 @@
                 {{'Name' | translate}}
               </option>
             </select>
-          </div>
 
-          <div class="col-sm-2" style="margin-inline: 26px 2px">
             <input
-              style="max-width: 200px"
               type="file"
               id="file"
-              accept=".xls,.xlsx"
+              accept=".xls,.xlsx,.csv"
               class="form-control btn btn-default"
               ngf-select="onFileSelect($files)"
             />
+            <div class="">
+              <input
+                type="checkbox"
+                id="allowOveride"
+                class=""
+                ng-model="formData.allowOveride"
+                placeholder="{{'Batch No' | translate}}"
+              />
+              <span>Allow Override</span>
+            </div>
           </div>
-          <div class="col-sm-2" style="margin-left: 0px">
-            <input
-              class="date-disable form-control"
-              id="otp"
-              type="text"
-              ng-model="formData.otp"
-              placeholder="{{'OTP' | translate}}"
-            />
-          </div>
-          <button
+          <div
+            class=""
             style="
-              margin: 20px 10px;
-              display: block;
-              width: 100%;
-              max-width: 200px;
+              margin-top: 20px;
+              display: flex;
+              justify-content: space-between;
             "
-            type="button"
-            class="form-control btn btn-primary col-sm-2"
-            ng-click="upload()"
           >
-            {{'label.button.upload' | translate}}
-          </button>
+            <button
+              style="
+                display: block;
+                width: 100%;
+                max-width: 200px;
+                margin-right: auto;
+              "
+              type="button"
+              class="form-control btn btn-default col-sm-2"
+              ng-click="upload(true)"
+            >
+              {{'Validate File' | translate}}
+            </button>
+            <button
+              style="
+                display: block;
+                width: 100%;
+                max-width: 200px;
+                margin-right: auto;
+              "
+              type="button"
+              class="form-control btn btn-primary col-sm-2"
+              ng-click="upload()"
+            >
+              {{'label.button.upload' | translate}}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   </div>
-  <div class="panel panel-default" ng-show="false">
-    <div class="panel-heading">
-      <h3 class="panel-title">{{'label.heading.documents' | translate}}</h3>
-      <button
-        style="margin-left: 1050px"
-        type="button"
-        class="btn btn-primary"
-        ng-click="refreshImportTable()"
-      >
-        <i class="fa fa-repeat"></i> {{'label.button.refresh' | translate}}
-      </button>
-    </div>
-    <div class="panel-body">
-      <table class="table">
-        <thead>
-          <tr class="graybg">
-            <th>{{ 'label.heading.name' | translate }}</th>
-            <th>{{ 'label.heading.importtime' | translate }}</th>
-            <th>{{ 'label.heading.endtime' | translate }}</th>
-            <th>{{ 'label.heading.completed' | translate }}</th>
-            <th>{{ 'label.heading.totalrecords' | translate }}</th>
-            <th>{{ 'label.heading.successcount' | translate }}</th>
-            <th>{{ 'label.heading.failurecount' | translate }}</th>
-            <th>{{ 'label.button.download' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            ng-repeat="import in imports"
-            ng-class="{'bg-success': import.completed, 'bg-danger': !import.completed}"
+  <div class="panel panel-default">
+    <table class="table">
+      <thead>
+        <tr class="graybg panel-heading">
+          <th>{{'Account Name' | translate}}</th>
+          <th>{{'Acc/GL No' | translate}}</th>
+          <th>{{'Account Type' | translate}}</th>
+          <th>{{'Credit' | translate}}</th>
+
+          <th>{{'Debit' | translate}}</th>
+          <th>{{'Available Balance' | translate}}</th>
+          <th>{{'Status' | translate}}</th>
+          <th>{{'Comment' | translate}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          class="pointer-main"
+          dir-paginate="coadata in coadatas | orderBy:['type.value','glCode']| SearchFilter:filterText |  itemsPerPage: ChartsPerPage"
+          total-items="totalContracts"
+          pagination-id="bulk-upload"
+        >
+          <td class="pointer">{{coadata?.accountName}}</td>
+          <td class="pointer">{{coadata?.accountNo}}</td>
+          <td class="pointer">{{coadata?.accountType}}</td>
+          <td class="pointer">{{coadata?.credit?.toLocaleString()}}</td>
+          <td class="pointer">{{coadata?.debit?.toLocaleString()}}</td>
+          <td class="pointer">
+            {{coadata?.availableBalance?.toLocaleString()}}
+          </td>
+          <td class="pointer">{{coadata?.status}}</td>
+          <td class="pointer">{{coadata?.comment}}</td>
+        </tr>
+      </tbody>
+      <tr>
+        <td colspan="5"></td>
+        <td class="pull-right">
+          <a ng-click="scrollto('viewlptop')"
+            ><i class="fa fa-upload"></i>{{'label.button.top' | translate}}</a
           >
-            <td>{{import.name}}</td>
-            <td>{{import.importTime | DateFormat}}</td>
-            <td>{{import.endTime | DateFormat}}</td>
-            <td>{{import.completed}}</td>
-            <td>{{import.totalRecords}}</td>
-            <td>{{import.successCount}}</td>
-            <td>{{import.failureCount}}</td>
-            <td ng-show="import.completed">
-              <a
-                target="_blank"
-                href="{{hostUrl}}{{import.docUrl}}"
-                has-permission="READ_DOCUMENT"
-                ><i class="fa fa-cloud-download"></i
-              ></a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        </td>
+      </tr>
+    </table>
+    <dir-pagination-controls
+      boundary-links="true"
+      template-url="bower_components/angular-utils-pagination/dirPagination.tpl.html"
+      on-page-change="getResultsPage(newPageNumber)"
+      pagination-id="bulk-upload"
+    ></dir-pagination-controls>
+  </div>
+  <div class="panel panel-default" ng-show="response">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{'Response' | translate}}</h3>
     </div>
+    <div class="panel-body">{{response}}</div>
   </div>
 
   <div class="clearfix"></div>
